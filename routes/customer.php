@@ -43,6 +43,11 @@ Route::middleware(['auth:customer', 'customer.portal'])
             'index',
         ])->name('customer.reservations');
 
+        Route::get('/cliente/reservas/{reservation}', [
+            CustomerPortalReservationController::class,
+            'show',
+        ])->name('customer.reservations.show');
+
         Route::post('/cliente/sair', [
             CustomerPortalAuthController::class,
             'logout',

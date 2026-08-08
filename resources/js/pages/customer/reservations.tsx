@@ -16,7 +16,7 @@ const formatDate = (value?: string | null) =>
 const money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
 const labels: Record<string, string> = {
     pending: 'Aguardando confirmação', confirmed: 'Confirmada',
-    active: 'Em locação', completed: 'Concluída', cancelled: 'Cancelada',
+    converted: 'Contrato preparado', active: 'Em locação', completed: 'Concluída', cancelled: 'Cancelada',
 };
 
 export default function CustomerReservations({ reservations }: { reservations: Reservation[] }) {
@@ -53,6 +53,12 @@ export default function CustomerReservations({ reservations }: { reservations: R
                                         <div className="rounded-2xl bg-zinc-50 p-4"><p className="flex items-center gap-2 text-xs font-bold text-zinc-400"><CalendarDays className="size-4" /> Devolução</p><strong className="mt-1 block">{formatDate(reservation.return_expected_at)}</strong></div>
                                     </div>
                                     <p className="mt-5 text-2xl font-black">{money.format(reservation.total_value)}</p>
+                                    <Link
+                                        href={`/cliente/reservas/${reservation.id}`}
+                                        className="mt-5 inline-grid h-11 place-items-center rounded-xl bg-zinc-950 px-5 text-sm font-black text-white transition hover:bg-red-600"
+                                    >
+                                        Ver detalhes da reserva
+                                    </Link>
                                 </div>
                             </article>
                         ))}
