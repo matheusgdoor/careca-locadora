@@ -43,8 +43,47 @@ Route::middleware('auth')->group(function (): void {
     )->name('service-orders.pdf');
 });
 
+Route::get('/vantagens', function () {
+    return \Inertia\Inertia::render('public/advantages');
+})->name('public.advantages');
+
+Route::get('/filiais', function () {
+    $organizationId = config('careca-public.organization_id');
+
+    $branches = \App\Models\Branch::query()
+        ->withoutGlobalScopes()
+        ->where('organization_id', $organizationId)
+        ->orderBy('name')
+        ->get()
+        ->map(fn (\App\Models\Branch $branch): array => [
+            'id' => $branch->id,
+            'name' => $branch->name,
+            'address' => $branch->address,
+            'number' => $branch->number,
+            'neighborhood' => $branch->neighborhood,
+            'city' => $branch->city,
+            'state' => $branch->state,
+            'phone' => $branch->phone,
+            'whatsapp' => $branch->whatsapp,
+        ])
+        ->values()
+        ->all();
+
+    return \Inertia\Inertia::render('public/branches', [
+        'branches' => $branches,
+    ]);
+})->name('public.branches');
+
+Route::get('/categoria/{category}', function (string $category) {
+    return \Inertia\Inertia::render('public/category-vehicles', [
+        'categoryId' => $category,
+    ]);
+})->name('public.categories.vehicles');
+
 Route::get('/veiculos/{asset}', function (string $asset) {
     return \Inertia\Inertia::render('public/vehicle-show', [
         'assetId' => $asset,
     ]);
 })->name('public.vehicles.show');
+
+require __DIR__.'/customer.php';

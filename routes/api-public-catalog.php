@@ -21,6 +21,10 @@ Route::prefix('public')
             'availability',
         ])->name('availability');
 
+        Route::post('/category-vehicles', [
+            PublicCatalogController::class,
+            'categoryVehicles',
+        ])->name('category-vehicles');
         Route::post('/quote', [
             PublicCatalogController::class,
             'quote',

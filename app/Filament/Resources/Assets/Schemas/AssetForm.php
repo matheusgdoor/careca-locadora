@@ -291,10 +291,35 @@ TextInput::make('name')
                             ->maxLength(40),
 
                         TextInput::make('seats')
-                            ->label('Passageiros')
+                            ->label('Lugares')
                             ->numeric()
                             ->minValue(1)
                             ->maxValue(100),
+
+                        TextInput::make('metadata.doors')
+                            ->label('Quantidade de portas')
+                            ->numeric()
+                            ->minValue(2)
+                            ->maxValue(6)
+                            ->placeholder('Ex.: 2'),
+
+                        TextInput::make('metadata.luggage_capacity')
+                            ->label('Capacidade de malas')
+                            ->numeric()
+                            ->minValue(0)
+                            ->maxValue(20)
+                            ->placeholder('Ex.: 2')
+                            ->helperText('Quantidade aproximada de malas padrão.'),
+
+                        Toggle::make('metadata.air_conditioning')
+                            ->label('Ar-condicionado')
+                            ->default(false)
+                            ->inline(false),
+
+                        Toggle::make('metadata.power_steering')
+                            ->label('Direção assistida')
+                            ->default(true)
+                            ->inline(false),
 
                         TextInput::make('old_plate')
                             ->label('Placa anterior')

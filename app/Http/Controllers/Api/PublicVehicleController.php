@@ -37,10 +37,24 @@ final class PublicVehicleController extends Controller
                 'model' => $vehicle->model,
                 'model_year' => $vehicle->model_year,
                 'seats' => $vehicle->seats,
-                'doors' => $vehicle->doors,
+                'doors' => data_get($vehicle->metadata, 'doors'),
                 'transmission' => $vehicle->transmission,
                 'fuel_type' => $vehicle->fuel_type,
                 'color' => $vehicle->color,
+                'air_conditioning' => (bool) data_get(
+                    $vehicle->metadata,
+                    'air_conditioning',
+                    false
+                ),
+                'power_steering' => (bool) data_get(
+                    $vehicle->metadata,
+                    'power_steering',
+                    false
+                ),
+                'luggage_capacity' => data_get(
+                    $vehicle->metadata,
+                    'luggage_capacity'
+                ),
                 'category' => [
                     'id' => $vehicle->category?->id,
                     'name' => $vehicle->category?->name,

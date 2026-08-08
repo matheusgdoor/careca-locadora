@@ -19,6 +19,14 @@ type Branch = {
     name: string;
     city?: string | null;
     state?: string | null;
+
+    address?: string | null;
+    street?: string | null;
+    number?: string | null;
+    neighborhood?: string | null;
+    zip_code?: string | null;
+    postal_code?: string | null;
+    cep?: string | null;
 };
 
 type CategoryFilter = {
@@ -230,11 +238,19 @@ export default function Welcome() {
                         </a>
 
                         <nav className="hidden gap-8 text-sm font-semibold lg:flex">
-                            <a href="#reserva">Reservar</a>
-                            <a href="#frota">Categorias</a>
-                            <a href="#vantagens">Vantagens</a>
-                            <a href="#lojas">Lojas</a>
-                        </nav>
+                        <a href="#reservar" className="hover:text-red-500">
+                            Reservar
+                        </a>
+                        <a href="#categorias" className="hover:text-red-500">
+                            Categorias
+                        </a>
+                        <a href="/vantagens" className="hover:text-red-500">
+                            Vantagens
+                        </a>
+                        <a href="/filiais" className="hover:text-red-500">
+                            Filiais
+                        </a>
+                    </nav>
 
                         <div className="hidden gap-3 lg:flex">
                             <a
@@ -296,7 +312,7 @@ export default function Welcome() {
 
                                 <div className="mt-6 grid gap-4">
                                     <label className="grid gap-2 text-xs font-bold">
-                                        Loja de retirada
+                                        Filial
                                         <select
                                             value={form.branch_id}
                                             onChange={(event) =>
@@ -308,18 +324,13 @@ export default function Welcome() {
                                             className="h-14 rounded-2xl border border-zinc-200 bg-white px-4 text-sm"
                                         >
                                             <option value="">
-                                                Todas as lojas
+                                                Todas as filiais
                                             </option>
                                             {branches.map((branch) => (
                                                 <option
                                                     key={branch.id}
                                                     value={branch.id}
-                                                >
-                                                    {branch.name}
-                                                    {branch.city
-                                                        ? ` — ${branch.city}/${branch.state ?? ''}`
-                                                        : ''}
-                                                </option>
+                                                >{branch.name}</option>
                                             ))}
                                         </select>
                                     </label>
@@ -608,13 +619,13 @@ export default function Welcome() {
 
                                                 <div className="mt-5 grid grid-cols-2 gap-3">
                                                     <a
-                                                        href={`/veiculos/${offer.representative_asset_id}?starts_at=${encodeURIComponent(form.starts_at)}&ends_at=${encodeURIComponent(form.ends_at)}&branch_id=${encodeURIComponent(form.branch_id)}&category_id=${encodeURIComponent(offer.id)}`}
+                                                        href={`/categoria/${offer.id}?starts_at=${encodeURIComponent(form.starts_at)}&ends_at=${encodeURIComponent(form.ends_at)}&branch_id=${encodeURIComponent(form.branch_id)}`}
                                                         className="flex h-12 items-center justify-center rounded-xl border border-zinc-200 text-sm font-black"
                                                     >
                                                         Ver detalhes
                                                     </a>
                                                     <a
-                                                        href={`/veiculos/${offer.representative_asset_id}?starts_at=${encodeURIComponent(form.starts_at)}&ends_at=${encodeURIComponent(form.ends_at)}&branch_id=${encodeURIComponent(form.branch_id)}&category_id=${encodeURIComponent(offer.id)}`}
+                                                        href={`/categoria/${offer.id}?starts_at=${encodeURIComponent(form.starts_at)}&ends_at=${encodeURIComponent(form.ends_at)}&branch_id=${encodeURIComponent(form.branch_id)}`}
                                                         className="flex h-12 items-center justify-center gap-2 rounded-xl bg-red-600 text-sm font-black text-white"
                                                     >
                                                         Reservar
@@ -662,10 +673,6 @@ export default function Welcome() {
                                         <div>
                                             <b>{branch.name}</b>
                                             <p className="text-sm text-zinc-400">
-                                                {branch.city}
-                                                {branch.state
-                                                    ? `/${branch.state}`
-                                                    : ''}
                                             </p>
                                         </div>
                                     </div>

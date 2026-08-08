@@ -157,7 +157,7 @@ final class PublicCatalogController extends Controller
                         ->sortByDesc('is_featured')
                         ->sortBy('display_order')
                         ->map(fn ($photo): array => [
-                            'path' => $photo->path,
+                            'path' => $photo->file_path,
                             'disk' => $photo->disk ?? 'public',
                             'featured' => (bool) $photo->is_featured,
                         ])
@@ -179,6 +179,75 @@ final class PublicCatalogController extends Controller
                 'count' => $categories->count(),
                 'available_assets' => $assets->count(),
                 'mode' => 'category',
+                'starts_at' => $search->startsAt->toIso8601String(),
+                'ends_at' => $search->endsAt->toIso8601String(),
+            ],
+        ]);
+    }
+
+    public function categoryVehicles(
+        PublicCatalogAvailabilityRequest $request,
+        ReservationAvailabilityEngine $engine,
+    ): JsonResponse {
+        $search = $this->search($request->validated());
+
+        $assets = $engine->availableAssets(
+            $search,
+            $request->string('search')->toString() ?: null,
+            100
+        )->map(fn (Asset $asset): array => [
+            'id' => $asset->id,
+            'prefix' => $asset->prefix,
+            'name' => $asset->name,
+            'plate' => $asset->plate,
+            'seats' => $asset->seats,
+            'doors' => data_get($asset->metadata, 'doors'),
+            'transmission' => $asset->transmission,
+            'fuel_type' => $asset->fuel_type,
+            'model_year' => $asset->model_year,
+            'air_conditioning' => (bool) data_get(
+                $asset->metadata,
+                'air_conditioning',
+                false
+            ),
+            'power_steering' => (bool) data_get(
+                $asset->metadata,
+                'power_steering',
+                false
+            ),
+            'luggage_capacity' => data_get(
+                $asset->metadata,
+                'luggage_capacity'
+            ),
+            'category' => [
+                'id' => $asset->category?->id,
+                'name' => $asset->category?->name,
+            ],
+            'branch' => [
+                'id' => $asset->branch?->id,
+                'name' => $asset->branch?->trade_name
+                    ?: $asset->branch?->name,
+                'city' => $asset->branch?->city,
+                'state' => $asset->branch?->state,
+            ],
+            'photos' => $asset->photos
+                ->filter(fn ($photo): bool => filled($photo->file_path))
+                ->sortByDesc('is_featured')
+                ->sortBy('display_order')
+                ->map(fn ($photo): array => [
+                    'path' => $photo->file_path,
+                    'disk' => $photo->disk ?? 'public',
+                    'featured' => (bool) $photo->is_featured,
+                ])
+                ->values()
+                ->all(),
+        ])->values();
+
+        return response()->json([
+            'data' => $assets,
+            'meta' => [
+                'count' => $assets->count(),
+                'mode' => 'assets',
                 'starts_at' => $search->startsAt->toIso8601String(),
                 'ends_at' => $search->endsAt->toIso8601String(),
             ],

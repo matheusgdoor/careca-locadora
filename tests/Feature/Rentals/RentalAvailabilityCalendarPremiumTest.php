@@ -6,7 +6,9 @@ it('mantém a agenda premium com estrutura Blade válida', function (): void {
 
     expect($source)
         ->toContain('rental-calendar__table')
-        ->toContain('@forelse ($this->schedule as $assetId => $items)')
+        ->toContain('@forelse ($this->schedule as $row)')
+        ->toContain('$asset = $row[\'asset\']')
+        ->toContain('$items = $row[\'items\']')
         ->toContain('@empty')
         ->toContain('@endforelse')
         ->toContain('slot-free')

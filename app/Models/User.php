@@ -55,6 +55,10 @@ class User extends Authenticatable implements FilamentUser, PasskeyUser
 
     public function canAccessPanel(Panel $panel): bool
     {
+        if ((bool) data_get($this->metadata, 'portal_only', false)) {
+            return false;
+        }
+
         return $this->is_platform_admin
             || (
                 $this->status === 'active'

@@ -12,6 +12,8 @@ import {
     MapPin,
     MessageCircle,
     ShieldCheck,
+    Snowflake,
+    Briefcase,
     Users,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
@@ -30,6 +32,9 @@ type Vehicle = {
     transmission?: string | null;
     fuel_type?: string | null;
     color?: string | null;
+    air_conditioning?: boolean;
+    power_steering?: boolean;
+    luggage_capacity?: number | null;
     category?: { id?: string | null; name?: string | null };
     branch?: {
         id?: string | null;
@@ -60,6 +65,46 @@ const money = new Intl.NumberFormat('pt-BR', {
     style: 'currency',
     currency: 'BRL',
 });
+
+const onlyDigits = (value: string): string => value.replace(/\D/g, '');
+
+const formatCpfCnpj = (value: string): string => {
+    const digits = onlyDigits(value).slice(0, 14);
+
+    if (digits.length <= 11) {
+        return digits
+            .replace(/^(\d{3})(\d)/, '$1.$2')
+            .replace(/^(\d{3})\.(\d{3})(\d)/, '$1.$2.$3')
+            .replace(/\.(\d{3})(\d)/, '.$1-$2');
+    }
+
+    return digits
+        .replace(/^(\d{2})(\d)/, '$1.$2')
+        .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
+        .replace(/\.(\d{3})(\d)/, '.$1/$2')
+        .replace(/(\d{4})(\d)/, '$1-$2');
+};
+
+const formatPhone = (value: string): string => {
+    const digits = onlyDigits(value).slice(0, 11);
+
+    if (digits.length <= 10) {
+        return digits
+            .replace(/^(\d{2})(\d)/, '($1) $2')
+            .replace(/(\d{4})(\d)/, '$1-$2');
+    }
+
+    return digits
+        .replace(/^(\d{2})(\d)/, '($1) $2')
+        .replace(/(\d{5})(\d)/, '$1-$2');
+};
+
+const formatCustomerField = (field: string, value: string): string => {
+    if (field === 'document') return formatCpfCnpj(value);
+    if (field === 'phone') return formatPhone(value);
+
+    return value;
+};
 
 const storageUrl = (path?: string | null): string | null => {
     if (!path) {
@@ -279,7 +324,7 @@ export default function VehicleShow({ assetId }: Props) {
                             <div className="relative aspect-[16/10] overflow-hidden rounded-[2rem] bg-zinc-200">
                                 {photos.length > 0 ? (
                                     <img
-                                        src={storageUrl(photos[activePhoto].path)}
+                                        src={storageUrl(photos[activePhoto].path) ?? undefined}
                                         alt={vehicle.name}
                                         className="h-full w-full object-cover"
                                     />
@@ -329,7 +374,7 @@ export default function VehicleShow({ assetId }: Props) {
                                         }`}
                                     >
                                         <img
-                                            src={storageUrl(photo.path)}
+                                            src={storageUrl(photo.path) ?? undefined}
                                             alt=""
                                             className="h-full w-full object-cover"
                                         />
@@ -348,12 +393,24 @@ export default function VehicleShow({ assetId }: Props) {
                                     {vehicle.branch?.name} · {vehicle.branch?.city}/{vehicle.branch?.state}
                                 </p>
 
-                                <div className="mt-7 grid grid-cols-2 gap-3 md:grid-cols-4">
+                                <div className="mt-7 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
                                     {[
                                         [Users, `${vehicle.seats ?? '—'} lugares`],
+                                        [CarFront, `${vehicle.doors ?? '—'} portas`],
+                                        [
+                                            Snowflake,
+                                            vehicle.air_conditioning
+                                                ? 'Ar-condicionado'
+                                                : 'Sem ar-condicionado',
+                                        ],
                                         [Gauge, vehicle.transmission ?? 'Câmbio'],
                                         [Fuel, vehicle.fuel_type ?? 'Combustível'],
-                                        [CarFront, `${vehicle.doors ?? '—'} portas`],
+                                        [
+                                            Briefcase,
+                                            vehicle.luggage_capacity
+                                                ? `${vehicle.luggage_capacity} malas`
+                                                : 'Porta-malas',
+                                        ],
                                     ].map(([Icon, label], index) => {
                                         const IconComponent = Icon as typeof Users;
                                         return (
@@ -484,6 +541,29 @@ export default function VehicleShow({ assetId }: Props) {
                                             <input
                                                 key={field}
                                                 placeholder={label}
+                                                inputMode={
+                                                    field === 'document' || field === 'phone'
+                                                        ? 'numeric'
+                                                        : field === 'email'
+                                                          ? 'email'
+                                                          : 'text'
+                                                }
+                                                maxLength={
+                                                    field === 'document'
+                                                        ? 18
+                                                        : field === 'phone'
+                                                          ? 15
+                                                          : undefined
+                                                }
+                                                autoComplete={
+                                                    field === 'name'
+                                                        ? 'name'
+                                                        : field === 'email'
+                                                          ? 'email'
+                                                          : field === 'phone'
+                                                            ? 'tel'
+                                                            : 'off'
+                                                }
                                                 value={
                                                     form.customer[
                                                         field as keyof typeof form.customer
@@ -494,7 +574,7 @@ export default function VehicleShow({ assetId }: Props) {
                                                         ...current,
                                                         customer: {
                                                             ...current.customer,
-                                                            [field]: event.target.value,
+                                                            [field]: formatCustomerField(field, event.target.value),
                                                         },
                                                     }))
                                                 }
