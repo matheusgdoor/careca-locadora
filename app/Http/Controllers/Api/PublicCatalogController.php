@@ -280,16 +280,17 @@ final class PublicCatalogController extends Controller
             ->where('organization_id', $this->organizationId())
             ->where('status', 'active')
             ->where('asset_category_id', $categoryId)
-            ->where(function (Builder $query) use ($branchId): void {
-                $query
-                    ->whereNull('branch_id')
-                    ->when(
-                        filled($branchId),
-                        fn (Builder $query) =>
-                            $query->orWhere('branch_id', $branchId)
-                    );
-            })
-            ->orderByRaw(
+            ->when(
+            filled($branchId),
+            fn (Builder $query): Builder => $query->where(
+                function (Builder $nested) use ($branchId): void {
+                    $nested
+                        ->whereNull('branch_id')
+                        ->orWhere('branch_id', $branchId);
+                }
+            )
+        )
+        ->orderByRaw(
                 'case when branch_id is null then 1 else 0 end'
             )
             ->orderBy('priority')
