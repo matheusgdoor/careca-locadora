@@ -29,8 +29,8 @@ class AssetForm
         return $schema
             ->columns(1)
             ->components([
-                Section::make('1. IdentificaÃƒÂ§ÃƒÂ£o do ativo')
-                    ->description('Categoria, prefixo e informaÃƒÂ§ÃƒÂµes principais.')
+                Section::make('1. Identificação do ativo')
+                    ->description('Categoria, prefixo e informações principais.')
                     ->columnSpanFull()
                     ->columns([
                         'default' => 1,
@@ -58,7 +58,7 @@ class AssetForm
                             ),
 
                         Select::make('branch_id')
-                            ->label('Filial responsÃƒÂ¡vel')
+                            ->label('Filial responsável')
                             ->relationship(
                                 name: 'branch',
                                 titleAttribute: 'name',
@@ -72,11 +72,11 @@ class AssetForm
                             ->required()
                             ->native(false)
                             ->helperText(
-                                'Define em qual loja o veÃƒÂ­culo ficarÃƒÂ¡ disponÃƒÂ­vel para reservas.'
+                                'Define em qual loja o veículo ficará disponível para reservas.'
                             ),
 
 TextInput::make('name')
-                            ->label('DescriÃƒÂ§ÃƒÂ£o do ativo')
+                            ->label('Descrição do ativo')
                             ->required()
                             ->maxLength(180)
                             ->columnSpan([
@@ -95,22 +95,22 @@ TextInput::make('name')
                             ]),
 
                         Select::make('operational_status')
-                            ->label('SituaÃƒÂ§ÃƒÂ£o operacional')
+                            ->label('Situação operacional')
                             ->required()
                             ->default('available')
                             ->options([
-                                'available' => 'DisponÃƒÂ­vel',
+                                'available' => 'Disponível',
                                 'in_use' => 'Em uso',
-                                'maintenance' => 'Em manutenÃƒÂ§ÃƒÂ£o',
+                                'maintenance' => 'Em manutenção',
                                 'blocked' => 'Bloqueado',
                             ]),
 
                         Select::make('rental_status')
-                            ->label('SituaÃƒÂ§ÃƒÂ£o da locaÃƒÂ§ÃƒÂ£o')
+                            ->label('Situação da locação')
                             ->required()
                             ->default('available')
                             ->options([
-                                'available' => 'DisponÃƒÂ­vel',
+                                'available' => 'Disponível',
                                 'reserved' => 'Reservado',
                                 'rented' => 'Locado',
                                 'blocked' => 'Bloqueado',
@@ -118,7 +118,7 @@ TextInput::make('name')
                     ]),
 
                 Section::make('2. Cadastro inteligente pela placa')
-                    ->description('Para categorias emplacadas, informe a placa e consulte o serviÃƒÂ§o externo.')
+                    ->description('Para categorias emplacadas, informe a placa e consulte o serviço externo.')
                     ->columnSpanFull()
                     ->columns([
                         'default' => 1,
@@ -162,7 +162,7 @@ TextInput::make('name')
                                         if (blank($organizationId)) {
                                             Notification::make()
                                                 ->danger()
-                                                ->title('OrganizaÃƒÂ§ÃƒÂ£o nÃƒÂ£o identificada')
+                                                ->title('Organização não identificada')
                                                 ->send();
 
                                             return;
@@ -227,22 +227,22 @@ TextInput::make('name')
 
                                             Notification::make()
                                                 ->success()
-                                                ->title('VeÃƒÂ­culo localizado')
+                                                ->title('Veículo localizado')
                                                 ->body(
-                                                    'Os dados disponÃƒÂ­veis foram preenchidos. Revise antes de salvar.'
+                                                    'Os dados disponíveis foram preenchidos. Revise antes de salvar.'
                                                     . ($classificationMessage ?? '')
                                                 )
                                                 ->send();
                                         } catch (Throwable $exception) {
                                             Notification::make()
                                                 ->danger()
-                                                ->title('NÃƒÂ£o foi possÃƒÂ­vel consultar a placa')
+                                                ->title('Não foi possível consultar a placa')
                                                 ->body($exception->getMessage())
                                                 ->send();
                                         }
                                     })
                             )
-                            ->helperText('PadrÃƒÂ£o antigo ou Mercosul, sem necessidade de hÃƒÂ­fen.'),
+                            ->helperText('Padrão antigo ou Mercosul, sem necessidade de hífen.'),
 
                         TextInput::make('renavam')
                             ->label('RENAVAM')
@@ -261,7 +261,7 @@ TextInput::make('name')
                             ->maxLength(150),
 
                         TextInput::make('version')
-                            ->label('VersÃƒÂ£o')
+                            ->label('Versão')
                             ->maxLength(150)
                             ->columnSpan([
                                 'default' => 1,
@@ -269,7 +269,7 @@ TextInput::make('name')
                             ]),
 
                         TextInput::make('manufacture_year')
-                            ->label('Ano de fabricaÃƒÂ§ÃƒÂ£o')
+                            ->label('Ano de fabricação')
                             ->numeric()
                             ->minValue(1900)
                             ->maxValue((int) date('Y') + 1),
@@ -285,11 +285,11 @@ TextInput::make('name')
                             ->maxLength(50),
 
                         TextInput::make('fuel_type')
-                            ->label('CombustÃƒÂ­vel')
+                            ->label('Combustível')
                             ->maxLength(40),
 
                         TextInput::make('transmission')
-                            ->label('CÃƒÂ¢mbio')
+                            ->label('Câmbio')
                             ->maxLength(40),
 
                         TextInput::make('seats')
@@ -311,7 +311,7 @@ TextInput::make('name')
                             ->minValue(0)
                             ->maxValue(20)
                             ->placeholder('Ex.: 2')
-                            ->helperText('Quantidade aproximada de malas padrÃƒÂ£o.'),
+                            ->helperText('Quantidade aproximada de malas padrão.'),
 
                         Toggle::make('metadata.air_conditioning')
                             ->label('Ar-condicionado')
@@ -319,7 +319,7 @@ TextInput::make('name')
                             ->inline(false),
 
                         Toggle::make('metadata.power_steering')
-                            ->label('DireÃƒÂ§ÃƒÂ£o assistida')
+                            ->label('Direção assistida')
                             ->default(true)
                             ->inline(false),
 
@@ -337,7 +337,7 @@ TextInput::make('name')
                             ->suffix('cc'),
 
                         TextInput::make('engine_power_hp')
-                            ->label('PotÃƒÂªncia')
+                            ->label('Potência')
                             ->numeric()
                             ->suffix('cv'),
 
@@ -356,11 +356,11 @@ TextInput::make('name')
                             ->suffix('t'),
 
                         TextInput::make('species')
-                            ->label('EspÃƒÂ©cie')
+                            ->label('Espécie')
                             ->maxLength(80),
 
                         TextInput::make('origin')
-                            ->label('ProcedÃƒÂªncia')
+                            ->label('Procedência')
                             ->maxLength(80),
 
                         TextInput::make('segment')
@@ -372,7 +372,7 @@ TextInput::make('name')
                             ->maxLength(100),
 
                         TextInput::make('registration_city')
-                            ->label('MunicÃƒÂ­pio de registro')
+                            ->label('Município de registro')
                             ->maxLength(120)
                             ->columnSpan([
                                 'default' => 1,
@@ -384,12 +384,12 @@ TextInput::make('name')
                             ->maxLength(2),
 
                         TextInput::make('external_situation')
-                            ->label('SituaÃƒÂ§ÃƒÂ£o externa')
+                            ->label('Situação externa')
                             ->maxLength(120),
                     ]),
 
                 Section::make('3. Dados FIPE')
-                    ->description('ReferÃƒÂªncia de mercado retornada pela consulta da placa.')
+                    ->description('Referência de mercado retornada pela consulta da placa.')
                     ->columnSpanFull()
                     ->columns([
                         'default' => 1,
@@ -398,11 +398,11 @@ TextInput::make('name')
                     ])
                     ->schema([
                         TextInput::make('fipe_code')
-                            ->label('CÃƒÂ³digo FIPE')
+                            ->label('Código FIPE')
                             ->maxLength(20),
 
                         TextInput::make('fipe_description')
-                            ->label('DescriÃƒÂ§ÃƒÂ£o FIPE')
+                            ->label('Descrição FIPE')
                             ->maxLength(220)
                             ->columnSpan([
                                 'default' => 1,
@@ -415,11 +415,11 @@ TextInput::make('name')
                             ->prefix('R$'),
 
                         TextInput::make('fipe_reference_month')
-                            ->label('MÃƒÂªs de referÃƒÂªncia')
+                            ->label('Mês de referência')
                             ->maxLength(80),
 
                         TextInput::make('fipe_score')
-                            ->label('Score de correspondÃƒÂªncia')
+                            ->label('Score de correspondência')
                             ->numeric()
                             ->suffix('%'),
                     ]),
@@ -437,19 +437,19 @@ TextInput::make('name')
                             ->required()
                             ->default('odometer')
                             ->options([
-                                'odometer' => 'HodÃƒÂ´metro',
-                                'hourmeter' => 'HorÃƒÂ­metro',
-                                'both' => 'HodÃƒÂ´metro e horÃƒÂ­metro',
+                                'odometer' => 'Hodômetro',
+                                'hourmeter' => 'Horímetro',
+                                'both' => 'Hodômetro e horímetro',
                             ]),
 
                         TextInput::make('current_odometer')
-                            ->label('HodÃƒÂ´metro atual')
+                            ->label('Hodômetro atual')
                             ->numeric()
                             ->suffix('km')
                             ->default(0),
 
                         TextInput::make('current_hourmeter')
-                            ->label('HorÃƒÂ­metro atual')
+                            ->label('Horímetro atual')
                             ->numeric()
                             ->suffix('h')
                             ->default(0),
@@ -459,19 +459,19 @@ TextInput::make('name')
                             ->required()
                             ->default('owned')
                             ->options([
-                                'owned' => 'PrÃƒÂ³prio',
+                                'owned' => 'Próprio',
                                 'leased' => 'Arrendado',
                                 'rented' => 'Locado de terceiro',
                                 'consigned' => 'Consignado',
                             ]),
 
                         DatePicker::make('acquisition_date')
-                            ->label('Data de aquisiÃƒÂ§ÃƒÂ£o')
+                            ->label('Data de aquisição')
                             ->native(false)
                             ->displayFormat('d/m/Y'),
 
                         TextInput::make('acquisition_value')
-                            ->label('Valor de aquisiÃƒÂ§ÃƒÂ£o')
+                            ->label('Valor de aquisição')
                             ->numeric()
                             ->prefix('R$'),
                     ]),
@@ -498,18 +498,18 @@ TextInput::make('name')
                                         'ipva' => 'IPVA',
                                         'licensing' => 'Licenciamento',
                                         'antt' => 'ANTT',
-                                        'tachograph' => 'CronotacÃƒÂ³grafo',
+                                        'tachograph' => 'Cronotacógrafo',
                                         'civ' => 'CIV',
                                         'cipp' => 'CIPP',
                                         'other' => 'Outro',
                                     ]),
 
                                 TextInput::make('number')
-                                    ->label('NÃƒÂºmero')
+                                    ->label('Número')
                                     ->maxLength(100),
 
                                 DatePicker::make('issued_at')
-                                    ->label('EmissÃƒÂ£o')
+                                    ->label('Emissão')
                                     ->native(false)
                                     ->displayFormat('d/m/Y'),
 
@@ -530,7 +530,7 @@ TextInput::make('name')
                                     ]),
 
                                 Textarea::make('notes')
-                                    ->label('ObservaÃƒÂ§ÃƒÂµes')
+                                    ->label('Observações')
                                     ->rows(2)
                                     ->columnSpan([
                                         'default' => 1,
@@ -546,6 +546,7 @@ TextInput::make('name')
                         Repeater::make('photos')
                             ->relationship()
                             ->label('')
+                            ->addActionLabel('Adicionar foto')
                             ->collapsible()
                             ->columns([
                                 'default' => 1,
@@ -584,7 +585,7 @@ TextInput::make('name')
                                     ]),
 
                                 TextInput::make('caption')
-                                    ->label('DescriÃƒÂ§ÃƒÂ£o')
+                                    ->label('Descrição')
                                     ->maxLength(200),
 
                                 Toggle::make('is_featured')
@@ -593,11 +594,11 @@ TextInput::make('name')
                             ->columnSpanFull(),
                     ]),
 
-                Section::make('7. ObservaÃƒÂ§ÃƒÂµes e auditoria externa')
+                Section::make('7. Observações e auditoria externa')
                     ->columnSpanFull()
                     ->schema([
                         Textarea::make('notes')
-                            ->label('ObservaÃƒÂ§ÃƒÂµes')
+                            ->label('Observações')
                             ->rows(4)
                             ->columnSpanFull(),
 
