@@ -70,7 +70,8 @@ final class PublicVehicleController extends Controller
                     ->sortByDesc('is_featured')
                     ->sortBy('display_order')
                     ->map(fn ($photo): array => [
-                        'path' => $photo->file_path,
+                        'path' => $photo->file_path,
+                        'url' => $photo->url,
                         'featured' => (bool) $photo->is_featured,
                     ])
                     ->values()
