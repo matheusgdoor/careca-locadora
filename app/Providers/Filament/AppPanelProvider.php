@@ -28,8 +28,11 @@ class AppPanelProvider extends PanelProvider
             ->path('app')
             ->maxContentWidth(Width::Full)
             ->login()
+            ->brandName('Careca Locadora')
+            ->brandLogo(asset('images/careca-locadora-logo.png'))
+            ->brandLogoHeight('3.5rem')
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::Red,
             ])
             ->discoverResources(
                 in: app_path('Filament/Resources'),

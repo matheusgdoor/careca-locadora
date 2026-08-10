@@ -1,5 +1,5 @@
 import { Head, Link, useForm } from '@inertiajs/react';
-import { CarFront, LockKeyhole, UserRound } from 'lucide-react';
+import { LockKeyhole, UserRound } from 'lucide-react';
 import { FormEvent } from 'react';
 
 export default function CustomerLogin() {
@@ -15,9 +15,12 @@ export default function CustomerLogin() {
             <Head title="Área do Cliente | Careca Locadora" />
             <div className="min-h-screen bg-[#f4f2ed] lg:grid lg:grid-cols-2">
                 <section className="hidden bg-zinc-950 p-14 text-white lg:flex lg:flex-col lg:justify-between">
-                    <Link href="/" className="flex items-center gap-3 text-xl font-black">
-                        <span className="grid size-12 place-items-center rounded-2xl bg-red-600"><CarFront /></span>
-                        Careca Locadora
+                    <Link href="/" className="inline-flex items-center">
+                        <img
+                            src="/images/careca-locadora-logo.png"
+                            alt="Careca Locadora de Veículos"
+                            className="h-16 w-auto max-w-[280px] object-contain object-left"
+                        />
                     </Link>
                     <div className="max-w-xl">
                         <p className="text-sm font-black tracking-[.2em] text-red-400 uppercase">Portal do Cliente</p>

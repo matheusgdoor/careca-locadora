@@ -1,5 +1,5 @@
 import { Head, Link, useForm } from '@inertiajs/react';
-import { CarFront, ShieldCheck } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
 import { FormEvent } from 'react';
 
 const onlyDigits = (value: string) =>
@@ -40,11 +40,12 @@ export default function CustomerFirstAccess() {
             <Head title="Primeiro acesso | Careca Locadora" />
             <div className="min-h-screen bg-[#f4f2ed] px-5 py-10">
                 <main className="mx-auto max-w-xl">
-                    <Link href="/" className="flex items-center gap-3 font-black">
-                        <span className="grid size-11 place-items-center rounded-2xl bg-red-600 text-white">
-                            <CarFront />
-                        </span>
-                        Careca Locadora
+                    <Link href="/" className="inline-flex items-center">
+                        <img
+                            src="/images/careca-locadora-logo.png"
+                            alt="Careca Locadora de Veículos"
+                            className="h-16 w-auto max-w-[280px] object-contain object-left"
+                        />
                     </Link>
 
                     <form

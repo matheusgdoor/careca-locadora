@@ -217,6 +217,29 @@ export default function Welcome() {
         }
     };
 
+    const visibleOffers = useMemo(() => {
+        const term = form.search.trim().toLocaleLowerCase('pt-BR');
+
+        if (!term) {
+            return offers;
+        }
+
+        return offers.filter((offer) =>
+            [
+                offer.name,
+                offer.public_title,
+                offer.similar_models,
+                offer.description,
+                offer.branch?.name,
+                offer.branch?.city,
+                offer.branch?.state,
+            ]
+                .filter(Boolean)
+                .some((value) =>
+                    String(value).toLocaleLowerCase('pt-BR').includes(term),
+                ),
+        );
+    }, [offers, form.search]);
     return (
         <>
             <Head title="Aluguel de veículos" />
@@ -282,7 +305,7 @@ export default function Welcome() {
                     <section className="relative overflow-hidden bg-[#08090b] text-white">
                         <div className="absolute inset-0 opacity-60 [background-image:radial-gradient(circle_at_75%_30%,rgba(220,38,38,.45),transparent_30%),radial-gradient(circle_at_15%_90%,rgba(255,255,255,.1),transparent_28%)]" />
 
-                        <div className="relative mx-auto grid min-h-[650px] max-w-7xl items-center gap-12 px-5 py-20 lg:grid-cols-2 lg:px-8">
+                        <div className="relative mx-auto grid min-h-[560px] max-w-7xl items-center gap-10 px-5 py-14 lg:grid-cols-2 lg:px-8">
                             <div>
                                 <span className="rounded-full border border-red-400/30 bg-red-500/10 px-4 py-2 text-xs font-black tracking-[.16em] text-red-300 uppercase">
                                     Mobilidade sem complicação
@@ -478,7 +501,7 @@ export default function Welcome() {
                                             event.target.value,
                                         )
                                     }
-                                    placeholder="Buscar categoria ou modelo"
+                                    placeholder="Buscar categoria, modelo ou filial"
                                     className="h-14 w-full rounded-2xl border border-zinc-200 bg-white pr-4 pl-12 text-sm"
                                 />
                             </div>
@@ -505,9 +528,22 @@ export default function Welcome() {
                             </div>
                         )}
 
+                        {searched &&
+                            offers.length > 0 &&
+                            visibleOffers.length === 0 && (
+                                <div className="mt-8 rounded-2xl border border-zinc-200 bg-white p-6 text-center">
+                                    <Search className="mx-auto size-8 text-zinc-400" />
+                                    <h3 className="mt-3 font-black">
+                                        Nenhum resultado para sua busca
+                                    </h3>
+                                    <p className="mt-1 text-sm text-zinc-500">
+                                        Tente outro modelo, categoria ou filial.
+                                    </p>
+                                </div>
+                            )}
                         {searched && offers.length > 0 && (
                             <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-                                {offers.map((offer) => {
+                                {visibleOffers.map((offer) => {
                                     const image = categoryImage(offer);
 
                                     return (
@@ -523,7 +559,7 @@ export default function Welcome() {
                                                             offer.public_title ??
                                                             offer.name
                                                         }
-                                                        className="h-full w-full object-cover"
+                                                        className="h-full w-full object-contain p-3"
                                                     />
                                                 ) : (
                                                     <div className="grid h-full place-items-center">
@@ -551,6 +587,38 @@ export default function Welcome() {
                                                         : offer.description ??
                                                           'Modelos equivalentes conforme disponibilidade.'}
                                                 </p>
+
+                                                {(offer.branch?.name ||
+                                                    offer.branch?.city) && (
+                                                    <p className="mt-3 flex items-center gap-2 text-xs font-semibold text-zinc-500">
+                                                        <MapPin className="size-4 text-red-600" />
+                                                        {[
+                                                            offer.branch?.name,
+                                                            offer.branch?.city,
+                                                            offer.branch?.state,
+                                                        ]
+                                                            .filter(Boolean)
+                                                            .join(' · ')}
+                                                    </p>
+                                                )}
+
+                                                {offer.tariffs.daily && (
+                                                    <div className="mt-5 rounded-2xl bg-red-50 px-4 py-3">
+                                                        <small className="font-semibold text-red-700">
+                                                            A partir de
+                                                        </small>
+                                                        <div className="mt-1 flex items-end gap-1">
+                                                            <b className="text-2xl font-black text-zinc-950">
+                                                                {money.format(
+                                                                    offer.tariffs.daily.value,
+                                                                )}
+                                                            </b>
+                                                            <span className="pb-1 text-xs font-semibold text-zinc-500">
+                                                                / diária
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                )}
 
                                                 <div className="mt-5 grid grid-cols-3 gap-2 text-xs font-bold">
                                                     <span className="rounded-xl bg-zinc-50 p-3">
@@ -673,8 +741,25 @@ export default function Welcome() {
                                         <MapPin className="text-red-500" />
                                         <div>
                                             <b>{branch.name}</b>
-                                            <p className="text-sm text-zinc-400">
+                                            <p className="mt-1 text-sm text-zinc-400">
+                                                {[branch.city, branch.state]
+                                                    .filter(Boolean)
+                                                    .join(' / ')}
                                             </p>
+                                            {(branch.address ||
+                                                branch.street ||
+                                                branch.neighborhood) && (
+                                                <p className="mt-1 text-xs text-zinc-500">
+                                                    {[
+                                                        branch.address ??
+                                                            branch.street,
+                                                        branch.number,
+                                                        branch.neighborhood,
+                                                    ]
+                                                        .filter(Boolean)
+                                                        .join(', ')}
+                                                </p>
+                                            )}
                                         </div>
                                     </div>
                                 ))}
