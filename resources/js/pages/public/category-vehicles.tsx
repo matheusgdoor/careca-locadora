@@ -596,7 +596,7 @@ export default function CategoryVehicles({ categoryId }: Props) {
                                             (photo) => photo.featured,
                                         ) ?? vehicle.photos?.at(0);
 
-                                    const photoUrl = storageUrl(featured?.path);
+                                    const photoUrl = featured?.url ?? storageUrl(featured?.path);
 
                                     const features: Feature[] = [
                                         {
