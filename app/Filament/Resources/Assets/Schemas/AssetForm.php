@@ -578,7 +578,6 @@ TextInput::make('name')
                                     ->imageEditor()
                                     ->disk(AssetPhotoStorage::disk())
                                     ->directory('fleet/photos')
-                                    ->visibility('public')
                                     ->maxSize(5120)
                                     ->columnSpan([
                                         'default' => 1,
