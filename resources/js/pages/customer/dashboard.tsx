@@ -11,6 +11,7 @@ type Reservation = {
     branch?: string | null;
     vehicle?: string | null;
     photo?: string | null;
+    photo_url?: string | null;
 };
 
 type Props = {
@@ -83,9 +84,9 @@ export default function CustomerDashboard({ customer, stats, nextReservation, re
                         <section className="mt-8 overflow-hidden rounded-[2rem] bg-zinc-950 text-white shadow-xl">
                             <div className="grid md:grid-cols-[1fr_1.2fr]">
                                 <div className="grid min-h-64 place-items-center bg-white/5 p-6">
-                                    {nextReservation.photo ? (
+                                    {(nextReservation.photo_url ?? nextReservation.photo) ? (
                                         <img
-                                            src={`/storage/${nextReservation.photo.replace(/^public\//, '')}`}
+                                            src={nextReservation.photo_url ?? `/storage/${nextReservation.photo?.replace(/^public\//, '')}`}
                                             alt={nextReservation.vehicle ?? 'Veículo'}
                                             className="max-h-60 w-full object-contain"
                                         />

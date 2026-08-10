@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\CustomerPortal;
 
 use App\Http\Controllers\Controller;
+use App\Services\Fleet\AssetPhotoStorage;
 use App\Models\RentalContract;
 use App\Models\RentalInvoice;
 use App\Models\RentalReservation;
 use App\Services\CustomerPortal\CustomerPortalAccountService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -86,6 +88,9 @@ final class CustomerPortalDashboardController extends Controller
             'branch' => $reservation->branch?->name,
             'vehicle' => $asset?->name,
             'photo' => $photo?->file_path,
+            'photo_url' => filled($photo?->file_path)
+                ? Storage::disk(AssetPhotoStorage::disk())->url($photo->file_path)
+                : null,
         ];
     }
 }

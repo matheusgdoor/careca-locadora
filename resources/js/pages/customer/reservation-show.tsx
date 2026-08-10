@@ -43,6 +43,7 @@ type Props = {
             seats?: number | null;
             doors?: number | null;
             photo?: string | null;
+            photo_url?: string | null;
         };
         timeline: TimelineItem[];
     };
@@ -116,9 +117,9 @@ export default function CustomerReservationShow({ reservation }: Props) {
                     <section className="mt-8 grid gap-6 xl:grid-cols-[1.3fr_.7fr]">
                         <article className="overflow-hidden rounded-[2rem] border border-zinc-200 bg-white shadow-sm">
                             <div className="grid min-h-80 place-items-center bg-zinc-50 p-8">
-                                {reservation.vehicle.photo ? (
+                                {(reservation.vehicle.photo_url ?? reservation.vehicle.photo) ? (
                                     <img
-                                        src={`/storage/${reservation.vehicle.photo.replace(/^public\//, '')}`}
+                                        src={reservation.vehicle.photo_url ?? `/storage/${reservation.vehicle.photo?.replace(/^public\//, '')}`}
                                         alt={reservation.vehicle.name ?? 'Veículo'}
                                         className="max-h-72 w-full object-contain"
                                     />

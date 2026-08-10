@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\CustomerPortal;
 
 use App\Http\Controllers\Controller;
+use App\Services\Fleet\AssetPhotoStorage;
 use App\Models\RentalReservation;
 use App\Services\CustomerPortal\CustomerPortalAccountService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -82,6 +84,9 @@ final class CustomerPortalReservationController extends Controller
                     'doors' => data_get($asset?->metadata, 'doors'),
                     'air_conditioning' => (bool) data_get($asset?->metadata, 'air_conditioning', false),
                     'photo' => $photo?->file_path,
+                    'photo_url' => filled($photo?->file_path)
+                        ? Storage::disk(AssetPhotoStorage::disk())->url($photo->file_path)
+                        : null,
                 ],
                 'timeline' => $this->timeline((string) $model->status),
             ],
@@ -107,6 +112,9 @@ final class CustomerPortalReservationController extends Controller
             'vehicle' => $asset?->name,
             'category' => $asset?->category?->name,
             'photo' => $photo?->file_path,
+            'photo_url' => filled($photo?->file_path)
+                ? Storage::disk(AssetPhotoStorage::disk())->url($photo->file_path)
+                : null,
         ];
     }
 

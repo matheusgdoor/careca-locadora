@@ -5,7 +5,7 @@ type Reservation = {
     id: string; number: string; status: string;
     pickup_expected_at?: string | null; return_expected_at?: string | null;
     total_value: number; branch?: string | null; vehicle?: string | null;
-    category?: string | null; photo?: string | null;
+    category?: string | null; photo?: string | null; photo_url?: string | null;
 };
 
 const formatDate = (value?: string | null) =>
@@ -35,8 +35,8 @@ export default function CustomerReservations({ reservations }: { reservations: R
                         {reservations.map((reservation) => (
                             <article key={reservation.id} className="overflow-hidden rounded-[2rem] border border-zinc-200 bg-white shadow-sm md:grid md:grid-cols-[260px_1fr]">
                                 <div className="grid min-h-52 place-items-center bg-zinc-50 p-5">
-                                    {reservation.photo ? (
-                                        <img src={`/storage/${reservation.photo.replace(/^public\//, '')}`} alt={reservation.vehicle ?? 'Veículo'} className="max-h-48 w-full object-contain" />
+                                    {(reservation.photo_url ?? reservation.photo) ? (
+                                        <img src={reservation.photo_url ?? `/storage/${reservation.photo?.replace(/^public\//, '')}`} alt={reservation.vehicle ?? 'Veículo'} className="max-h-48 w-full object-contain" />
                                     ) : <CarFront className="size-16 text-zinc-300" />}
                                 </div>
                                 <div className="p-6">
