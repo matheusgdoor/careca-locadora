@@ -38,6 +38,11 @@ export default function CustomerLogin() {
                         <h2 className="mt-2 text-3xl font-black">Acesse sua conta</h2>
                         <p className="mt-2 text-sm text-zinc-500">Use CPF/CNPJ ou e-mail cadastrado.</p>
 
+                        {form.hasErrors && (
+                            <div className="mt-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+                                Não foi possível entrar. Confira suas credenciais.
+                            </div>
+                        )}
                         <label className="mt-7 block text-sm font-black text-zinc-700">
                             CPF/CNPJ ou e-mail
                             <div className="mt-2 flex h-12 items-center rounded-xl border border-zinc-200 px-4 focus-within:border-red-500">
@@ -62,6 +67,11 @@ export default function CustomerLogin() {
                                     className="h-full w-full bg-transparent px-3 outline-none"
                                 />
                             </div>
+                            {form.errors.password && (
+                                <p className="mt-1 text-sm font-semibold text-red-600">
+                                    {form.errors.password}
+                                </p>
+                            )}
                         </label>
 
                         <button disabled={form.processing} className="mt-6 h-12 w-full rounded-xl bg-red-600 font-black text-white hover:bg-red-700 disabled:opacity-60">

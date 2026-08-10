@@ -62,6 +62,11 @@ export default function CustomerFirstAccess() {
                             e crie sua senha.
                         </p>
 
+                        {form.hasErrors && (
+                            <div className="mt-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+                                Não foi possível criar seu acesso. Revise os dados destacados abaixo.
+                            </div>
+                        )}
                         <label className="mt-6 block text-sm font-black text-zinc-700">
                             CPF/CNPJ
                             <input
@@ -116,10 +121,16 @@ export default function CustomerFirstAccess() {
                                 }
                                 className="mt-2 h-12 w-full rounded-xl border border-zinc-200 px-4 outline-none focus:border-red-500"
                             />
+                            {form.errors.password && (
+                                <p className="mt-1 text-sm font-semibold text-red-600">
+                                    {form.errors.password}
+                                </p>
+                            )}
                         </label>
 
                         <label className="mt-5 block text-sm font-black text-zinc-700">
                             Confirme sua senha
+                            <span className="mt-1 block text-xs font-medium text-zinc-400">As duas senhas devem ser iguais.</span>
                             <input
                                 type="password"
                                 autoComplete="new-password"
