@@ -17,6 +17,7 @@ type Props = {
 
 type VehiclePhoto = {
     path: string;
+    url?: string | null;
     featured?: boolean;
 };
 

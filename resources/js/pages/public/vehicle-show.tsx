@@ -284,9 +284,10 @@ export default function VehicleShow({ assetId }: Props) {
         return <div className="grid min-h-screen place-items-center">{error}</div>;
     }
 
-    const photos = (vehicle.photos ?? []).filter(
-    (photo) => typeof photo?.path === 'string' && photo.path.trim() !== '',
-);
+    const photos = (vehicle.photos ?? []).filter((photo) =>
+        (typeof photo?.url === 'string' && photo.url.trim() !== '') ||
+        (typeof photo?.path === 'string' && photo.path.trim() !== ''),
+    );
 
     return (
         <>
@@ -324,7 +325,7 @@ export default function VehicleShow({ assetId }: Props) {
                             <div className="relative aspect-[16/10] overflow-hidden rounded-[2rem] bg-zinc-200">
                                 {photos.length > 0 ? (
                                     <img
-                                        src={storageUrl(photos[activePhoto].path) ?? undefined}
+                                        src={(photos[activePhoto].url ?? (photos[activePhoto].url ?? (photos[activePhoto].url ?? (photos[activePhoto].url ?? storageUrl(photos[activePhoto].path))))) ?? undefined}
                                         alt={vehicle.name}
                                         className="h-full w-full object-cover"
                                     />
@@ -374,7 +375,7 @@ export default function VehicleShow({ assetId }: Props) {
                                         }`}
                                     >
                                         <img
-                                            src={storageUrl(photo.path) ?? undefined}
+                                            src={(photo.url ?? (photo.url ?? (photo.url ?? storageUrl(photo.path)))) ?? undefined}
                                             alt=""
                                             className="h-full w-full object-cover"
                                         />
