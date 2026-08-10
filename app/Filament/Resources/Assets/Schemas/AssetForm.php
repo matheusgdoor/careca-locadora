@@ -20,6 +20,9 @@ use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Throwable;
 
 class AssetForm
@@ -578,7 +581,49 @@ TextInput::make('name')
                                     ->imageEditor()
                                     ->disk(AssetPhotoStorage::disk())
                                     ->directory('fleet/photos')
-                                ->visibility('private')
+                                ->saveUploadedFileUsing(
+                                    function (FileUpload $component, TemporaryUploadedFile $file): string {
+                                        $disk = $component->getDiskName();
+                                        $directory = trim((string) $component->getDirectory(), '/');
+
+                                        $extension = strtolower(
+                                            $file->getClientOriginalExtension()
+                                            ?: ($file->guessExtension() ?: 'bin')
+                                        );
+
+                                        $filename = Str::uuid()->toString() . '.' . $extension;
+                                        $path = filled($directory)
+                                            ? $directory . '/' . $filename
+                                            : $filename;
+
+                                        $stream = $file->readStream();
+
+                                        if (! is_resource($stream)) {
+                                            throw new \RuntimeException(
+                                                'Nao foi possivel abrir o arquivo temporario para gravacao.'
+                                            );
+                                        }
+
+                                        try {
+                                            $stored = Storage::disk($disk)->put($path, $stream);
+                                        } finally {
+                                            fclose($stream);
+                                        }
+
+                                        if (
+                                            ! $stored
+                                            || ! Storage::disk($disk)->exists($path)
+                                        ) {
+                                            Storage::disk($disk)->delete($path);
+
+                                            throw new \RuntimeException(
+                                                'A foto nao foi gravada no armazenamento permanente.'
+                                            );
+                                        }
+
+                                        return $path;
+                                    },
+                                )
                                     ->maxSize(5120)
                                     ->columnSpan([
                                         'default' => 1,
