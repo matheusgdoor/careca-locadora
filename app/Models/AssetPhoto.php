@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Services\Fleet\AssetPhotoStorage;
+
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -25,5 +27,10 @@ class AssetPhoto extends Model
     public function asset(): BelongsTo
     {
         return $this->belongsTo(Asset::class);
+    }
+
+    public function getUrlAttribute(): ?string
+    {
+        return AssetPhotoStorage::url($this->file_path);
     }
 }

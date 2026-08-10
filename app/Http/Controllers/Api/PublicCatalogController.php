@@ -158,7 +158,7 @@ final class PublicCatalogController extends Controller
                         ->sortBy('display_order')
                         ->map(fn ($photo): array => [
                             'path' => $photo->file_path,
-                            'disk' => $photo->disk ?? 'public',
+                            'disk' => \App\Services\Fleet\AssetPhotoStorage::disk(),
                             'featured' => (bool) $photo->is_featured,
                         ])
                         ->values()
@@ -236,7 +236,7 @@ final class PublicCatalogController extends Controller
                 ->sortBy('display_order')
                 ->map(fn ($photo): array => [
                     'path' => $photo->file_path,
-                    'disk' => $photo->disk ?? 'public',
+                    'disk' => \App\Services\Fleet\AssetPhotoStorage::disk(),
                     'featured' => (bool) $photo->is_featured,
                 ])
                 ->values()
