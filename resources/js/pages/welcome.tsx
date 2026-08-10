@@ -63,7 +63,7 @@ type CategoryOffer = {
         transmissions?: string[];
         fuel_types?: string[];
     };
-    photos?: Array<{ path: string; featured: boolean }>;
+    photos?: Array<{ path: string; url?: string | null; featured: boolean }>;
     tariffs: {
         daily?: Tariff | null;
         fifteen_days?: Tariff | null;
@@ -98,7 +98,7 @@ const categoryImage = (offer: CategoryOffer): string | null => {
     const photo =
         offer.photos?.find((item) => item.featured) ?? offer.photos?.[0];
 
-    return storageUrl(photo?.path);
+    return photo?.url ?? storageUrl(photo?.path);
 };
 
 export default function Welcome() {
@@ -121,7 +121,7 @@ export default function Welcome() {
     const [categories, setCategories] = useState<CategoryFilter[]>([]);
     const [offers, setOffers] = useState<CategoryOffer[]>([]);
     const [loading, setLoading] = useState(false);
-    const [searched, setSearched] = useState(false);
+    const [searched, setSearched] = useState(true);
     const [menuOpen, setMenuOpen] = useState(false);
     const [message, setMessage] = useState<string | null>(null);
     const [form, setForm] = useState({
@@ -144,6 +144,7 @@ export default function Welcome() {
             .then(([branchPayload, categoryPayload]) => {
                 setBranches(branchPayload.data ?? []);
                 setCategories(categoryPayload.data ?? []);
+                void searchCategories();
             })
             .catch(() =>
                 setMessage(
@@ -254,7 +255,7 @@ export default function Welcome() {
 
                         <div className="hidden gap-3 lg:flex">
                             <a
-                                href="/login"
+                                href="/cliente/acesso"
                                 className="rounded-full border border-white/15 px-5 py-2.5 text-sm font-bold"
                             >
                                 Área do cliente

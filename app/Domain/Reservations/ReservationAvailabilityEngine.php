@@ -26,6 +26,7 @@ final class ReservationAvailabilityEngine
             ->with(['category', 'branch', 'photos'])
             ->where('organization_id', $search->organizationId)
             ->where('status', 'active')
+            ->whereNull('deleted_at')
             ->whereNotIn('operational_status', [
                 'maintenance',
                 'blocked',
