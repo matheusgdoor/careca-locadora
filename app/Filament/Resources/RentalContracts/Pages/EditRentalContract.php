@@ -5,11 +5,14 @@ namespace App\Filament\Resources\RentalContracts\Pages;
 use App\Filament\Resources\RentalContracts\RentalContractResource;
 use App\Filament\Resources\RentalDeliveries\RentalDeliveryResource;
 use App\Filament\Resources\RentalReturns\RentalReturnResource;
+use App\Services\Rentals\RentalContractCommunicationService;
+use App\Services\Rentals\RentalContractSignatureService;
 use App\Services\Rentals\RentalDeliveryService;
 use App\Services\Rentals\RentalReturnService;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
+use Throwable;
 
 class EditRentalContract extends EditRecord
 {
@@ -18,6 +21,89 @@ class EditRentalContract extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('contractPdf')
+                ->label('Visualizar PDF')
+                ->icon('heroicon-o-document-text')
+                ->color('gray')
+                ->url(fn (): string => route('rental-contracts.pdf', $this->record))
+                ->openUrlInNewTab(),
+
+            Action::make('printContract')
+                ->label('Imprimir contrato')
+                ->icon('heroicon-o-printer')
+                ->color('gray')
+                ->url(fn (): string => route('rental-contracts.pdf', [
+                    'contract' => $this->record,
+                    'print' => 1,
+                ]))
+                ->openUrlInNewTab(),
+
+            Action::make('requestSignature')
+                ->label('Solicitar assinatura')
+                ->icon('heroicon-o-pencil-square')
+                ->color('warning')
+                ->visible(fn (): bool => in_array($this->record->status, ['draft', 'awaiting_signature'], true))
+                ->action(function (): void {
+                    $signatureRequest = app(RentalContractSignatureService::class)
+                        ->createRequest($this->record);
+
+                    $url = app(RentalContractSignatureService::class)
+                        ->url($signatureRequest);
+
+                    Notification::make()
+                        ->success()
+                        ->title('Link de assinatura criado')
+                        ->body('O link é válido por 7 dias. Use E-mail ou WhatsApp para enviá-lo ao cliente.')
+                        ->actions([
+                            Action::make('abrirAssinatura')
+                                ->label('Abrir link')
+                                ->url($url, shouldOpenInNewTab: true),
+                        ])
+                        ->send();
+
+                    $this->reloadRecordPage();
+                }),
+
+            Action::make('sendContractEmail')
+                ->label('Enviar por e-mail')
+                ->icon('heroicon-o-envelope')
+                ->color('info')
+                ->requiresConfirmation()
+                ->action(function (): void {
+                    try {
+                        if (! $this->record->signatureRequests()
+                            ->where('status', 'pending')
+                            ->where('expires_at', '>', now())
+                            ->exists()) {
+                            app(RentalContractSignatureService::class)
+                                ->createRequest($this->record);
+                            $this->record->refresh();
+                        }
+
+                        app(RentalContractCommunicationService::class)
+                            ->sendEmail($this->record);
+
+                        Notification::make()
+                            ->success()
+                            ->title('Contrato enviado por e-mail')
+                            ->body((string) $this->record->customer?->email)
+                            ->send();
+                    } catch (Throwable $exception) {
+                        Notification::make()
+                            ->danger()
+                            ->title('Não foi possível enviar o contrato')
+                            ->body($exception->getMessage())
+                            ->send();
+                    }
+                }),
+
+            Action::make('sendContractWhatsapp')
+                ->label('Enviar por WhatsApp')
+                ->icon('heroicon-o-chat-bubble-left-right')
+                ->color('success')
+                ->url(fn (): string => route('rental-contracts.whatsapp', $this->record))
+                ->openUrlInNewTab(),
+
             Action::make('generateInvoice')
                 ->label('Gerar fatura de locação')
                 ->icon('heroicon-o-document-currency-dollar')
@@ -30,7 +116,7 @@ class EditRentalContract extends EditRecord
                     $invoice = app(\App\Services\Rentals\RentalInvoiceService::class)
                         ->createFromContract($this->record);
 
-                    \Filament\Notifications\Notification::make()
+                    Notification::make()
                         ->success()
                         ->title('Fatura de locação gerada')
                         ->body("Fatura {$invoice->number}")
@@ -56,14 +142,13 @@ class EditRentalContract extends EditRecord
                         ])
                     );
                 }),
+
             Action::make('awaitingSignature')
-                ->label('Enviar para assinatura')
+                ->label('Marcar aguardando assinatura')
                 ->icon('heroicon-o-paper-airplane')
                 ->visible(fn (): bool => $this->record->status === 'draft')
                 ->action(function (): void {
-                    $this->record->update([
-                        'status' => 'awaiting_signature',
-                    ]);
+                    $this->record->update(['status' => 'awaiting_signature']);
 
                     Notification::make()
                         ->success()
@@ -78,12 +163,7 @@ class EditRentalContract extends EditRecord
                 ->icon('heroicon-o-play')
                 ->color('success')
                 ->requiresConfirmation()
-                ->visible(fn (): bool =>
-                    in_array($this->record->status, [
-                        'draft',
-                        'awaiting_signature',
-                    ], true)
-                )
+                ->visible(fn (): bool => in_array($this->record->status, ['draft', 'awaiting_signature'], true))
                 ->action(function (): void {
                     $now = now();
 

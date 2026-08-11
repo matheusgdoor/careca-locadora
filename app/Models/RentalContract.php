@@ -77,61 +77,25 @@ class RentalContract extends Model
         ];
     }
 
-    public function reservation(): BelongsTo
+    public function reservation(): BelongsTo { return $this->belongsTo(RentalReservation::class); }
+    public function customer(): BelongsTo { return $this->belongsTo(BusinessPartner::class, 'business_partner_id'); }
+    public function authorizedContact(): BelongsTo { return $this->belongsTo(BusinessPartnerContact::class, 'authorized_contact_id'); }
+    public function responsibleUser(): BelongsTo { return $this->belongsTo(User::class, 'responsible_user_id'); }
+    public function company(): BelongsTo { return $this->belongsTo(Company::class); }
+    public function branch(): BelongsTo { return $this->belongsTo(Branch::class); }
+    public function costCenter(): BelongsTo { return $this->belongsTo(CostCenter::class); }
+    public function items(): HasMany { return $this->hasMany(RentalContractItem::class, 'contract_id'); }
+    public function delivery(): HasOne { return $this->hasOne(RentalDelivery::class, 'contract_id'); }
+    public function rentalReturn(): HasOne { return $this->hasOne(RentalReturn::class, 'contract_id'); }
+    public function rentalInvoice(): HasOne { return $this->hasOne(RentalInvoice::class, 'contract_id'); }
+
+    public function signatureRequests(): HasMany
     {
-        return $this->belongsTo(RentalReservation::class);
+        return $this->hasMany(RentalContractSignatureRequest::class, 'rental_contract_id');
     }
 
-    public function customer(): BelongsTo
+    public function events(): HasMany
     {
-        return $this->belongsTo(BusinessPartner::class, 'business_partner_id');
-    }
-
-    public function authorizedContact(): BelongsTo
-    {
-        return $this->belongsTo(
-            BusinessPartnerContact::class,
-            'authorized_contact_id'
-        );
-    }
-
-    public function responsibleUser(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'responsible_user_id');
-    }
-
-    public function company(): BelongsTo
-    {
-        return $this->belongsTo(Company::class);
-    }
-
-    public function branch(): BelongsTo
-    {
-        return $this->belongsTo(Branch::class);
-    }
-
-    public function costCenter(): BelongsTo
-    {
-        return $this->belongsTo(CostCenter::class);
-    }
-
-    public function items(): HasMany
-    {
-        return $this->hasMany(RentalContractItem::class, 'contract_id');
-    }
-
-    public function delivery(): HasOne
-    {
-        return $this->hasOne(RentalDelivery::class, 'contract_id');
-    }
-
-    public function rentalReturn(): HasOne
-    {
-        return $this->hasOne(RentalReturn::class, 'contract_id');
-    }
-
-    public function rentalInvoice(): HasOne
-    {
-        return $this->hasOne(RentalInvoice::class, 'contract_id');
+        return $this->hasMany(RentalContractEvent::class, 'rental_contract_id');
     }
 }

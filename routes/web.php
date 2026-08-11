@@ -89,3 +89,33 @@ Route::get('/veiculos/{asset}', function (string $asset) {
 })->name('public.vehicles.show');
 
 require __DIR__.'/customer.php';
+
+/* Careca Locadora 19.0.0A - Contrato Premium e assinatura eletrônica */
+\Illuminate\Support\Facades\Route::middleware('auth')->group(function (): void {
+    \Illuminate\Support\Facades\Route::get(
+        '/app/rental-contracts/{contract}/pdf',
+        \App\Http\Controllers\Rentals\RentalContractPdfController::class
+    )->name('rental-contracts.pdf');
+
+    \Illuminate\Support\Facades\Route::get(
+        '/app/rental-contracts/{contract}/whatsapp',
+        \App\Http\Controllers\Rentals\RentalContractWhatsappController::class
+    )->name('rental-contracts.whatsapp');
+});
+
+\Illuminate\Support\Facades\Route::middleware('signed')->group(function (): void {
+    \Illuminate\Support\Facades\Route::get(
+        '/contratos/assinatura/{signatureRequest}',
+        [\App\Http\Controllers\Rentals\PublicRentalContractSignatureController::class, 'show']
+    )->name('public.contract-signature.show');
+
+    \Illuminate\Support\Facades\Route::post(
+        '/contratos/assinatura/{signatureRequest}',
+        [\App\Http\Controllers\Rentals\PublicRentalContractSignatureController::class, 'store']
+    )->name('public.contract-signature.store');
+
+    \Illuminate\Support\Facades\Route::get(
+        '/contratos/assinatura/{signatureRequest}/pdf',
+        [\App\Http\Controllers\Rentals\PublicRentalContractSignatureController::class, 'pdf']
+    )->name('public.contract-signature.pdf');
+});
