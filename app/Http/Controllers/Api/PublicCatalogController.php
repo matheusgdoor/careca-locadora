@@ -31,7 +31,13 @@ final class PublicCatalogController extends Controller
                 'id' => $branch->id,
                 'name' => $branch->name,
                 'city' => $branch->city,
-                'state' => $branch->state,
+                'state' => $branch->state,
+                'address' => $branch->address,
+                'number' => $branch->number,
+                'neighborhood' => $branch->neighborhood,
+                'zip_code' => $branch->zip_code,
+                'phone' => $branch->phone,
+                'whatsapp' => $branch->whatsapp,
             ]);
 
         return response()->json(['data' => $data]);

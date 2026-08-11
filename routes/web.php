@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'welcome')->name('home');
+Route::inertia('/reservar', 'public/reserve')->name('public.reserve');
+Route::inertia('/categorias', 'public/categories')->name('public.categories');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');

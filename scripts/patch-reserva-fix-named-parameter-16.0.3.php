@@ -3,21 +3,21 @@
 declare(strict_types=1);
 
 $root = $argv[1] ?? dirname(__DIR__);
-$app = $root . '/app';
+$appPath = $root . '/app';
 
-if (! is_dir($app)) {
-    throw new RuntimeException("Diretorio app nao encontrado: {$app}");
+if (! is_dir($appPath)) {
+    throw new RuntimeException("Diretorio app nao encontrado: {$appPath}");
 }
 
 $iterator = new RecursiveIteratorIterator(
     new RecursiveDirectoryIterator(
-        $app,
+        $appPath,
         FilesystemIterator::SKIP_DOTS
     )
 );
 
-$found = 0;
-$changed = 0;
+$changed = [];
+$matches = [];
 
 foreach ($iterator as $file) {
     if (! $file->isFile() || $file->getExtension() !== 'php') {
@@ -31,14 +31,7 @@ foreach ($iterator as $file) {
         continue;
     }
 
-    $found++;
-    $relative = str_replace(
-        [$root . DIRECTORY_SEPARATOR, '\\'],
-        ['', '/'],
-        $path
-    );
-
-    echo "[ENCONTRADO] {$relative}" . PHP_EOL;
+    $matches[] = $path;
 
     $patched = str_replace(
         'selectedItemIds:',
@@ -49,16 +42,15 @@ foreach ($iterator as $file) {
 
     if ($count > 0) {
         file_put_contents($path, $patched);
-        $changed += $count;
-        echo "[CORRIGIDO] {$relative} ({$count} ocorrencia(s))" . PHP_EOL;
+        $changed[] = [$path, $count];
     }
 }
 
-if ($found === 0) {
-    throw new RuntimeException(
-        'Nenhuma ocorrencia de selectedItemIds: foi encontrada. '
-        . 'O projeto pode ter sido alterado desde o erro.'
-    );
+if ($matches === []) {
+    echo "[SEM ALTERACAO] Nenhum named argument selectedItemIds: encontrado." . PHP_EOL;
+    exit(0);
 }
 
-echo "[OK] Total de substituicoes: {$changed}" . PHP_EOL;
+foreach ($changed as [$path, $count]) {
+    echo "[CORRIGIDO] {$path} ({$count} ocorrencia(s))" . PHP_EOL;
+}

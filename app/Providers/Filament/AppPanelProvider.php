@@ -30,7 +30,7 @@ class AppPanelProvider extends PanelProvider
             ->login()
             ->brandName('Careca Locadora')
             ->brandLogo(asset('images/careca-locadora-logo.png'))
-            ->brandLogoHeight('3.5rem')
+            ->brandLogoHeight('5.5rem')
             ->colors([
                 'primary' => Color::Red,
             ])

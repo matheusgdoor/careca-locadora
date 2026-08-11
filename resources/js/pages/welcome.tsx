@@ -247,25 +247,19 @@ export default function Welcome() {
             <div className="min-h-screen bg-[#f5f2eb] text-zinc-950">
                 <header className="sticky top-0 z-50 bg-[#08090b]/95 text-white backdrop-blur">
                     <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 lg:px-8">
-                        <a href="/" className="flex items-center gap-3">
-                            <span className="grid size-11 place-items-center rounded-2xl bg-red-600">
-                                <CarFront />
-                            </span>
-                            <span>
-                                <b className="block text-lg">
-                                    Careca Locadora
-                                </b>
-                                <small className="text-[10px] tracking-[.2em] text-zinc-400 uppercase">
-                                    Veículos e soluções
-                                </small>
-                            </span>
+                                                <a href="/" className="flex min-w-0 items-center">
+                            <img
+                                src="/images/careca-locadora-logo.png"
+                                alt="Careca Locadora de Veículos"
+                                className="h-14 w-auto max-w-[245px] object-contain object-left"
+                            />
                         </a>
 
-                        <nav className="hidden gap-8 text-sm font-semibold lg:flex">
-                        <a href="#reservar" className="hover:text-red-500">
+<nav className="hidden gap-8 text-sm font-semibold lg:flex">
+                        <a href="/reservar" className="hover:text-red-500">
                             Reservar
                         </a>
-                        <a href="#categorias" className="hover:text-red-500">
+                        <a href="/categorias" className="hover:text-red-500">
                             Categorias
                         </a>
                         <a href="/vantagens" className="hover:text-red-500">
