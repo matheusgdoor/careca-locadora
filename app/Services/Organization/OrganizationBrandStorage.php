@@ -3,6 +3,7 @@
 namespace App\Services\Organization;
 
 use Illuminate\Support\Facades\Storage;
+use Throwable;
 
 final class OrganizationBrandStorage
 {
@@ -10,11 +11,9 @@ final class OrganizationBrandStorage
     {
         $default = (string) config('filesystems.default', 'local');
 
-        if ($default === '' || $default === 'local') {
-            return 'public';
-        }
-
-        return $default;
+        return ($default === '' || $default === 'local')
+            ? 'public'
+            : $default;
     }
 
     public static function url(?string $path): ?string
@@ -33,6 +32,16 @@ final class OrganizationBrandStorage
             $normalized = substr($normalized, strlen('storage/'));
         }
 
-        return Storage::disk(self::disk())->url($normalized);
+        try {
+            $disk = Storage::disk(self::disk());
+
+            if (! $disk->exists($normalized)) {
+                return null;
+            }
+
+            return $disk->url($normalized);
+        } catch (Throwable) {
+            return null;
+        }
     }
 }

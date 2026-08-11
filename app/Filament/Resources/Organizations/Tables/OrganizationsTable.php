@@ -19,15 +19,23 @@ class OrganizationsTable
             ->columns([
                 ImageColumn::make('logo_path')
                     ->label('Logo')
-                    ->disk(OrganizationBrandStorage::disk())
-                    ->circular(),
+                    ->state(fn ($record): ?string => OrganizationBrandStorage::url($record->logo_path))
+                    ->defaultImageUrl(
+                        fn ($record): ?string =>
+                            (string) $record->id === (string) config('careca-public.organization_id')
+                                ? asset('images/careca-locadora-logo.png')
+                                : null
+                    )
+                    ->imageWidth(110)
+                    ->imageHeight(64)
+                    ->extraImgAttributes([
+                        'class' => 'object-contain rounded-lg bg-zinc-900/60 p-1',
+                        'loading' => 'lazy',
+                    ]),
 
                 TextColumn::make('name')
                     ->label('Nome')
-                    ->description(
-                        fn ($record): ?string =>
-                            $record->trade_name ?: $record->legal_name
-                    )
+                    ->description(fn ($record): ?string => $record->trade_name ?: $record->legal_name)
                     ->searchable(['name', 'trade_name', 'legal_name'])
                     ->sortable()
                     ->weight('medium')
@@ -35,10 +43,7 @@ class OrganizationsTable
 
                 TextColumn::make('document')
                     ->label('CPF/CNPJ')
-                    ->formatStateUsing(
-                        fn (?string $state): string =>
-                            self::formatDocument($state)
-                    )
+                    ->formatStateUsing(fn (?string $state): string => self::formatDocument($state))
                     ->searchable()
                     ->toggleable(),
 
@@ -46,9 +51,7 @@ class OrganizationsTable
                     ->label('Localidade')
                     ->formatStateUsing(
                         fn (?string $state, $record): string =>
-                            collect([$state, $record->state])
-                                ->filter()
-                                ->implode(' / ') ?: '—'
+                            collect([$state, $record->state])->filter()->implode(' / ') ?: '—'
                     )
                     ->searchable()
                     ->toggleable(),
@@ -90,7 +93,6 @@ class OrganizationsTable
                         'suspended' => 'Suspensa',
                         'inactive' => 'Inativa',
                     ]),
-
                 SelectFilter::make('state')
                     ->label('UF')
                     ->options([
