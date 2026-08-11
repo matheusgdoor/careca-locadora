@@ -283,6 +283,7 @@ final class PublicCatalogController extends Controller
     ): array {
         $rates = RentalRatePlan::query()
             ->withoutGlobalScopes()
+            ->whereNull('deleted_at')
             ->where('organization_id', $this->organizationId())
             ->where('status', 'active')
             ->where('asset_category_id', $categoryId)
