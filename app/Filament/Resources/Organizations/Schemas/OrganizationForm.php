@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Organizations\Schemas;
 
+
+use App\Services\Organization\OrganizationBrandStorage;
 use App\Support\UI\BrazilInputMask;
 use App\Services\ExternalData\CepLookupService;
 use App\Services\ExternalData\CnpjLookupService;
@@ -296,7 +298,7 @@ class OrganizationForm
                             ->image()
                             ->imageEditor()
                             ->directory('organizations/logos')
-                            ->disk('public')
+                            ->disk(fn (): string => OrganizationBrandStorage::disk())
                             ->visibility('public')
                             ->maxSize(2048)
                             ->preventFilePathTampering()
@@ -306,7 +308,7 @@ class OrganizationForm
                             ->label('Ícone (favicon)')
                             ->image()
                             ->directory('organizations/favicons')
-                            ->disk('public')
+                            ->disk(fn (): string => OrganizationBrandStorage::disk())
                             ->visibility('public')
                             ->maxSize(1024)
                             ->preventFilePathTampering()

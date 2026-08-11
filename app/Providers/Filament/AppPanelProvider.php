@@ -9,6 +9,7 @@ use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Panel;
 use Filament\PanelProvider;
+use Filament\Support\Assets\Css;
 use Filament\Support\Colors\Color;
 use Filament\Support\Enums\Width;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -30,9 +31,15 @@ class AppPanelProvider extends PanelProvider
             ->login()
             ->brandName('Careca Locadora')
             ->brandLogo(asset('images/careca-locadora-logo.png'))
-            ->brandLogoHeight('5.5rem')
+            ->brandLogoHeight('8.5rem')
             ->colors([
                 'primary' => Color::Red,
+            ])
+            ->assets([
+                Css::make(
+                    'careca-premium',
+                    resource_path('css/filament/careca-premium.css')
+                ),
             ])
             ->discoverResources(
                 in: app_path('Filament/Resources'),

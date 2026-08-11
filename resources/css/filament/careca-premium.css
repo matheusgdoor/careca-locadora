@@ -1,141 +1,200 @@
-/*
-|--------------------------------------------------------------------------
-| Careca Locadora — Design System 3.1.0
-|--------------------------------------------------------------------------
-| Base visual reutilizável para CRM, Frota, Contratos, Oficina e Financeiro.
-*/
 
-.fi-main,
-.fi-page,
-.fi-page-content {
-    width: 100%;
-}
-
-.fi-header-heading {
-    letter-spacing: -0.025em;
-    line-height: 1.15;
-}
-
-.fi-section,
-.careca-premium-section {
-    border-radius: 0.95rem;
+.fi-simple-layout {
+    min-height: 100vh !important;
+    position: relative;
     overflow: hidden;
+    background:
+        radial-gradient(circle at 12% 55%, rgba(239,0,20,.22), transparent 20rem),
+        radial-gradient(circle at 88% 55%, rgba(239,0,20,.18), transparent 22rem),
+        radial-gradient(circle at 50% -10%, rgba(239,0,20,.10), transparent 30rem),
+        linear-gradient(135deg,#030405 0%,#090a0c 45%,#030405 100%) !important;
+    color: #fff;
 }
 
-.fi-section-header {
-    padding: 1.1rem 1.35rem;
+.fi-simple-layout::before,
+.fi-simple-layout::after {
+    content: "";
+    position: fixed;
+    z-index: 0;
+    top: 48%;
+    width: 34rem;
+    height: 18rem;
+    transform: translateY(-50%) skewX(-13deg);
+    pointer-events: none;
+    opacity: .48;
+    filter: blur(3px);
 }
 
-.fi-section-content-ctn > .fi-section-content {
-    padding: 1.35rem;
+.fi-simple-layout::before {
+    left: -25rem;
+    background:
+        radial-gradient(ellipse at 80% 50%, rgba(255,255,255,.28) 0 1%, transparent 7%),
+        radial-gradient(ellipse at 84% 52%, rgba(239,0,20,.9) 0 2%, rgba(239,0,20,.22) 12%, transparent 35%);
 }
 
-.fi-sc-grid {
-    column-gap: 1.35rem;
-    row-gap: 1.2rem;
+.fi-simple-layout::after {
+    right: -25rem;
+    background:
+        radial-gradient(ellipse at 20% 50%, rgba(255,255,255,.28) 0 1%, transparent 7%),
+        radial-gradient(ellipse at 16% 52%, rgba(239,0,20,.9) 0 2%, rgba(239,0,20,.22) 12%, transparent 35%);
 }
 
-.fi-fo-field-wrp {
-    min-width: 0;
+.fi-simple-main {
+    position: relative;
+    z-index: 2;
+    width: min(92vw, 640px) !important;
+    max-width: 640px !important;
+    margin-block: 2rem !important;
+    padding: 2.2rem 3rem 2.5rem !important;
+    border: 1px solid rgba(239,0,20,.72) !important;
+    border-radius: 2rem !important;
+    background: linear-gradient(160deg,rgba(24,25,28,.97),rgba(10,11,13,.985)) !important;
+    box-shadow:
+        0 0 0 1px rgba(255,255,255,.025) inset,
+        0 24px 70px rgba(0,0,0,.62),
+        0 0 42px rgba(239,0,20,.10) !important;
+    backdrop-filter: blur(18px);
 }
 
-.fi-input-wrp {
-    min-height: 2.9rem;
-    border-radius: 0.72rem;
+.fi-simple-header {
+    gap: .5rem !important;
+    margin-bottom: 1.75rem !important;
 }
 
-.fi-input-wrp input,
-.fi-input-wrp select,
-.fi-input-wrp textarea {
-    font-size: 0.95rem;
+.fi-simple-header .fi-logo,
+.fi-simple-header img.fi-logo,
+.fi-logo {
+    display: block !important;
+    width: min(88%, 370px) !important;
+    max-width: 370px !important;
+    height: auto !important;
+    max-height: 190px !important;
+    margin-inline: auto !important;
+    object-fit: contain !important;
+    filter: drop-shadow(0 7px 18px rgba(0,0,0,.72))
+            drop-shadow(0 0 12px rgba(239,0,20,.16));
 }
 
-.fi-input-wrp input:not([type="checkbox"]):not([type="radio"]) {
-    min-height: 2.8rem;
+.fi-simple-header-heading {
+    margin-top: .65rem !important;
+    color: #fff !important;
+    font-size: clamp(1.8rem,3.5vw,2.35rem) !important;
+    line-height: 1.05 !important;
+    font-weight: 900 !important;
+    letter-spacing: -.035em !important;
 }
 
-.fi-fo-field-wrp-label {
-    margin-bottom: 0.45rem;
+.fi-simple-header-subheading {
+    color: #a7a7ad !important;
 }
 
-.fi-fo-field-wrp-label span {
-    font-weight: 600;
+.fi-simple-main label,
+.fi-simple-main .fi-fo-field-wrp-label,
+.fi-simple-main .fi-fo-field-wrp-label span {
+    color: #fff !important;
+    font-weight: 750 !important;
 }
 
-.fi-fo-checkbox-list {
-    gap: 0.8rem 1.3rem;
+.fi-simple-main .fi-input-wrp {
+    min-height: 3.55rem !important;
+    border: 1px solid rgba(113,113,122,.55) !important;
+    border-radius: .95rem !important;
+    background: rgba(26,27,30,.96) !important;
+    box-shadow: none !important;
+    transition: border-color .18s ease, box-shadow .18s ease, background .18s ease !important;
 }
 
-.fi-fo-checkbox-list-option {
-    min-height: 2.4rem;
-    align-items: center;
+.fi-simple-main .fi-input-wrp:focus-within {
+    border-color: #ef0014 !important;
+    background: rgba(29,30,33,1) !important;
+    box-shadow:
+        0 0 0 1px #ef0014,
+        0 0 0 4px rgba(239,0,20,.10),
+        0 0 20px rgba(239,0,20,.08) !important;
 }
 
-.fi-fo-repeater-item {
-    border-radius: 0.85rem;
+.fi-simple-main .fi-input,
+.fi-simple-main input {
+    color: #fff !important;
+    font-size: 1rem !important;
 }
 
-.fi-fo-repeater-item-content {
-    padding: 1.3rem;
+.fi-simple-main input::placeholder {
+    color: #72727a !important;
 }
 
-.fi-btn {
-    min-height: 2.7rem;
-    border-radius: 0.72rem;
-    font-weight: 600;
+.fi-simple-main .fi-input-wrp svg {
+    color: #9b9ba3 !important;
 }
 
-.fi-form-actions,
-.fi-ac-form-actions {
-    position: sticky;
-    bottom: 0;
-    z-index: 20;
-    padding: 0.9rem 1rem;
-    margin-inline: -1rem;
-    background: color-mix(in srgb, var(--gray-950) 92%, transparent);
-    backdrop-filter: blur(12px);
-    border-top: 1px solid color-mix(in srgb, var(--gray-500) 25%, transparent);
+.fi-simple-main .fi-checkbox-input {
+    border-color: #57575f !important;
+    background: #1a1b1e !important;
 }
 
-:root:not(.dark) .fi-form-actions,
-:root:not(.dark) .fi-ac-form-actions {
-    background: color-mix(in srgb, white 94%, transparent);
+.fi-simple-main .fi-checkbox-input:checked {
+    border-color: #ef0014 !important;
+    background: #ef0014 !important;
 }
 
-.fi-ta-table th,
-.fi-ta-table td {
-    padding-block: 0.85rem;
+.fi-simple-main a {
+    color: #ff3646 !important;
+    font-weight: 700 !important;
 }
 
-.fi-ta-table th {
-    white-space: nowrap;
+.fi-simple-main a:hover {
+    color: #ff6270 !important;
 }
 
-.careca-kpi-card {
-    border-radius: 0.95rem;
-    min-height: 7rem;
+.fi-simple-main .fi-btn.fi-color-primary,
+.fi-simple-main button[type="submit"].fi-btn {
+    min-height: 3.65rem !important;
+    width: 100% !important;
+    border-radius: .9rem !important;
+    border: 1px solid rgba(255,67,82,.25) !important;
+    background: linear-gradient(90deg,#d90012 0%,#f00017 48%,#d90012 100%) !important;
+    color: #fff !important;
+    font-size: 1rem !important;
+    font-weight: 900 !important;
+    box-shadow: 0 12px 30px rgba(239,0,20,.20), 0 1px 0 rgba(255,255,255,.14) inset !important;
 }
 
-@media (max-width: 1279px) {
-    .fi-section-content-ctn > .fi-section-content {
-        padding: 1.15rem;
+.fi-simple-main .fi-btn.fi-color-primary:hover,
+.fi-simple-main button[type="submit"].fi-btn:hover {
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+}
+
+.fi-simple-main .fi-fo-field-wrp-error-message {
+    color: #ff6b76 !important;
+}
+
+@media (max-width: 640px) {
+    .fi-simple-layout {
+        padding: 1rem !important;
     }
 
-    .fi-sc-grid {
-        column-gap: 1rem;
-        row-gap: 1rem;
-    }
-}
-
-@media (max-width: 639px) {
-    .fi-section-header,
-    .fi-section-content-ctn > .fi-section-content {
-        padding-inline: 1rem;
+    .fi-simple-layout::before,
+    .fi-simple-layout::after {
+        opacity: .20;
     }
 
-    .fi-form-actions,
-    .fi-ac-form-actions {
-        margin-inline: 0;
-        border-radius: 0.75rem 0.75rem 0 0;
+    .fi-simple-main {
+        width: 100% !important;
+        margin-block: 0 !important;
+        padding: 1.75rem 1.25rem 2rem !important;
+        border-radius: 1.45rem !important;
+    }
+
+    .fi-simple-header .fi-logo,
+    .fi-simple-header img.fi-logo,
+    .fi-logo {
+        width: min(90%, 280px) !important;
+        max-width: 280px !important;
+        max-height: 145px !important;
+    }
+
+    .fi-simple-header-heading {
+        font-size: 1.75rem !important;
     }
 }

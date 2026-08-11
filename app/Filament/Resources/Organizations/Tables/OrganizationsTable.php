@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Organizations\Tables;
 
+use App\Services\Organization\OrganizationBrandStorage;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -18,27 +19,36 @@ class OrganizationsTable
             ->columns([
                 ImageColumn::make('logo_path')
                     ->label('Logo')
-                    ->disk('public')
+                    ->disk(OrganizationBrandStorage::disk())
                     ->circular(),
 
                 TextColumn::make('name')
                     ->label('Nome')
-                    ->description(fn ($record): ?string => $record->trade_name ?: $record->legal_name)
+                    ->description(
+                        fn ($record): ?string =>
+                            $record->trade_name ?: $record->legal_name
+                    )
                     ->searchable(['name', 'trade_name', 'legal_name'])
                     ->sortable()
                     ->weight('medium')
-                    ->wrap(),
+                    ->limit(48),
 
                 TextColumn::make('document')
                     ->label('CPF/CNPJ')
-                    ->formatStateUsing(fn (?string $state): string => self::formatDocument($state))
+                    ->formatStateUsing(
+                        fn (?string $state): string =>
+                            self::formatDocument($state)
+                    )
                     ->searchable()
                     ->toggleable(),
 
                 TextColumn::make('city')
                     ->label('Localidade')
                     ->formatStateUsing(
-                        fn (?string $state, $record): string => collect([$state, $record->state])->filter()->implode(' / ') ?: '—'
+                        fn (?string $state, $record): string =>
+                            collect([$state, $record->state])
+                                ->filter()
+                                ->implode(' / ') ?: '—'
                     )
                     ->searchable()
                     ->toggleable(),
@@ -47,7 +57,7 @@ class OrganizationsTable
                     ->label('E-mail')
                     ->searchable()
                     ->toggleable()
-                    ->wrap(),
+                    ->limit(36),
 
                 TextColumn::make('status')
                     ->label('Status')

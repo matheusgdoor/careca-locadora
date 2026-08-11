@@ -22,10 +22,18 @@ class BusinessPartnersTable
 
                 TextColumn::make('display_name')
                     ->label('Nome')
-                    ->description(fn ($record): string => $record->legal_name)
+                    ->description(function ($record): ?string {
+                        $display = trim((string) $record->display_name);
+                        $legal = trim((string) $record->legal_name);
+
+                        return filled($legal) && $legal !== $display
+                            ? $legal
+                            : null;
+                    })
                     ->searchable(['legal_name', 'trade_name'])
                     ->sortable()
-                    ->wrap(),
+                    ->limit(48)
+                    ->tooltip(fn ($record): string => (string) $record->display_name),
 
                 TextColumn::make('roles')
                     ->label('Papéis')
@@ -42,11 +50,16 @@ class BusinessPartnersTable
 
                 TextColumn::make('document')
                     ->label('CPF/CNPJ')
+                    ->formatStateUsing(
+                        fn (?string $state): string => self::formatDocument($state)
+                    )
                     ->searchable(),
 
                 TextColumn::make('email')
                     ->label('E-mail')
                     ->searchable()
+                    ->limit(36)
+                    ->tooltip(fn (?string $state): ?string => $state)
                     ->toggleable(),
 
                 TextColumn::make('credit_limit')
@@ -87,5 +100,28 @@ class BusinessPartnersTable
                 ]),
             ])
             ->defaultSort('legal_name');
+    }
+
+    private static function formatDocument(?string $document): string
+    {
+        $digits = preg_replace('/\D+/', '', (string) $document);
+
+        if (strlen($digits) === 14) {
+            return preg_replace(
+                '/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/',
+                '$1.$2.$3/$4-$5',
+                $digits
+            ) ?? $digits;
+        }
+
+        if (strlen($digits) === 11) {
+            return preg_replace(
+                '/^(\d{3})(\d{3})(\d{3})(\d{2})$/',
+                '$1.$2.$3-$4',
+                $digits
+            ) ?? $digits;
+        }
+
+        return $digits ?: '—';
     }
 }
