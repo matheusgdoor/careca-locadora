@@ -8,14 +8,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\URL;
 use RuntimeException;
+use Throwable;
 
 final class RentalContractSignatureService
 {
     public function __construct(
         private readonly RentalContractDocumentService $documents,
         private readonly RentalContractEventService $events,
-    ) {
-    }
+    ) {}
 
     public function createRequest(RentalContract $contract, int $validDays = 7): RentalContractSignatureRequest
     {
@@ -32,9 +32,11 @@ final class RentalContractSignatureService
             'signer_email' => $contract->customer?->email,
             'signer_document' => $contract->customer?->document,
             'signer_phone' => $contract->customer?->whatsapp ?: $contract->customer?->phone,
-            'document_hash' => $this->documents->hash($contract),
+            'document_hash' => str_repeat('0', 64),
             'expires_at' => now()->addDays($validDays),
         ]);
+
+        $request = $this->documents->freeze($request);
 
         $contract->update(['status' => 'awaiting_signature']);
 
@@ -44,9 +46,18 @@ final class RentalContractSignatureService
             channel: 'link',
             recipient: $request->signer_email ?: $request->signer_phone,
             signatureRequest: $request,
+            metadata: [
+                'document_hash' => $request->document_hash,
+                'snapshot_version' => data_get($request->metadata, 'document_snapshot_version'),
+            ],
         );
 
         return $request;
+    }
+
+    public function ensureFrozenDocument(RentalContractSignatureRequest $signatureRequest): RentalContractSignatureRequest
+    {
+        return $this->documents->freeze($signatureRequest);
     }
 
     public function url(RentalContractSignatureRequest $request): string
@@ -60,6 +71,8 @@ final class RentalContractSignatureService
 
     public function markViewed(RentalContractSignatureRequest $signatureRequest): void
     {
+        $signatureRequest = $this->ensureFrozenDocument($signatureRequest);
+
         if ($signatureRequest->viewed_at) {
             return;
         }
@@ -80,6 +93,8 @@ final class RentalContractSignatureService
         string $signatureDataUrl,
         bool $accepted,
     ): RentalContractSignatureRequest {
+        $signatureRequest = $this->ensureFrozenDocument($signatureRequest);
+
         if (! $accepted) {
             throw new RuntimeException('É necessário aceitar os termos para assinar.');
         }
@@ -93,9 +108,15 @@ final class RentalContractSignatureService
             throw new RuntimeException('Esta solicitação de assinatura expirou.');
         }
 
-        $currentHash = $this->documents->hash($signatureRequest->contract);
+        $frozenHash = $this->documents->frozenHash($signatureRequest);
 
-        if (! hash_equals($signatureRequest->document_hash, $currentHash)) {
+        if (! hash_equals($signatureRequest->document_hash, $frozenHash)) {
+            throw new RuntimeException('A versão armazenada do contrato não passou na validação de integridade.');
+        }
+
+        $currentLiveHash = $this->documents->liveHash($signatureRequest->contract);
+
+        if (! hash_equals($signatureRequest->document_hash, $currentLiveHash)) {
             throw new RuntimeException('O contrato foi alterado após o envio. Gere uma nova solicitação de assinatura.');
         }
 
@@ -109,12 +130,22 @@ final class RentalContractSignatureService
             throw new RuntimeException('Assinatura inválida ou muito grande.');
         }
 
-        return DB::transaction(function () use ($signatureRequest, $httpRequest, $bytes): RentalContractSignatureRequest {
-            $path = RentalContractStorage::putSignature(
-                $signatureRequest->organization_id,
-                $signatureRequest->id,
-                $bytes,
-            );
+        return DB::transaction(function () use ($signatureRequest, $httpRequest, $signatureDataUrl, $bytes): RentalContractSignatureRequest {
+            $metadata = $signatureRequest->metadata ?? [];
+            $metadata['signature_data_url'] = $signatureDataUrl;
+            $metadata['signature_sha256'] = hash('sha256', $bytes);
+
+            $path = null;
+
+            try {
+                $path = RentalContractStorage::putSignature(
+                    $signatureRequest->organization_id,
+                    $signatureRequest->id,
+                    $bytes,
+                );
+            } catch (Throwable) {
+                // O banco permanece como cópia durável primária.
+            }
 
             $signatureRequest->update([
                 'status' => 'signed',
@@ -123,6 +154,7 @@ final class RentalContractSignatureService
                 'signed_ip' => $httpRequest->ip(),
                 'signed_user_agent' => mb_substr((string) $httpRequest->userAgent(), 0, 2000),
                 'acceptance_text' => 'Declaro que li, compreendi e aceito integralmente o contrato apresentado.',
+                'metadata' => $metadata,
             ]);
 
             $signatureRequest->contract->update([
@@ -132,10 +164,7 @@ final class RentalContractSignatureService
             $signatureRequest->refresh();
 
             $signatureRequest->update([
-                'signed_document_hash' => $this->documents->hash(
-                    $signatureRequest->contract,
-                    $signatureRequest,
-                ),
+                'signed_document_hash' => $this->documents->signedContentHash($signatureRequest),
             ]);
 
             $this->events->record(
@@ -148,6 +177,7 @@ final class RentalContractSignatureService
                     'ip' => $signatureRequest->signed_ip,
                     'document_hash' => $signatureRequest->document_hash,
                     'signed_document_hash' => $signatureRequest->signed_document_hash,
+                    'signature_sha256' => data_get($signatureRequest->metadata, 'signature_sha256'),
                 ],
             );
 

@@ -24,6 +24,7 @@ final class PublicRentalContractSignatureController extends Controller
         abort_if($signatureRequest->expires_at->isPast(), 410);
         abort_if($signatureRequest->status === 'cancelled', 410);
 
+        $signatureRequest = $signatures->ensureFrozenDocument($signatureRequest);
         $signatureRequest->loadMissing('contract.customer');
         $signatures->markViewed($signatureRequest);
 
@@ -66,7 +67,7 @@ final class PublicRentalContractSignatureController extends Controller
         ]);
 
         try {
-            $signatures->sign(
+            $signatureRequest = $signatures->sign(
                 $signatureRequest,
                 $request,
                 $data['signature'],
@@ -78,18 +79,23 @@ final class PublicRentalContractSignatureController extends Controller
             ]);
         }
 
-        return back()->with('success', 'Contrato assinado com sucesso.');
+        return redirect()->to(
+            $signatures->url($signatureRequest)
+        )->with('success', 'Contrato assinado com sucesso.');
     }
 
     public function pdf(
         RentalContractSignatureRequest $signatureRequest,
         RentalContractDocumentService $documents,
+        RentalContractSignatureService $signatures,
     ): Response {
         abort_if($signatureRequest->expires_at->isPast(), 410);
 
+        $signatureRequest = $signatures->ensureFrozenDocument($signatureRequest);
+
         $bytes = $documents->bytes(
             $signatureRequest->contract,
-            $signatureRequest->status === 'signed' ? $signatureRequest : null,
+            $signatureRequest,
         );
 
         return response($bytes, 200, [

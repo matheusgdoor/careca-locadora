@@ -44,7 +44,9 @@ type Vehicle = {
     };
     photos?: {
     path: string | null;
+    url?: string | null;
     featured: boolean;
+
 }[];
 };
 
@@ -325,7 +327,7 @@ export default function VehicleShow({ assetId }: Props) {
                             <div className="relative aspect-[16/10] overflow-hidden rounded-[2rem] bg-zinc-200">
                                 {photos.length > 0 ? (
                                     <img
-                                        src={(photos[activePhoto].url ?? (photos[activePhoto].url ?? (photos[activePhoto].url ?? (photos[activePhoto].url ?? storageUrl(photos[activePhoto].path))))) ?? undefined}
+                                        src={photos[activePhoto].url ?? storageUrl(photos[activePhoto].path) ??undefined}
                                         alt={vehicle.name}
                                         className="h-full w-full object-cover"
                                     />
@@ -375,7 +377,11 @@ export default function VehicleShow({ assetId }: Props) {
                                         }`}
                                     >
                                         <img
-                                            src={(photo.url ?? (photo.url ?? (photo.url ?? storageUrl(photo.path)))) ?? undefined}
+                                            src={
+    photo.url ??
+    storageUrl(photo.path) ??
+    undefined
+}
                                             alt=""
                                             className="h-full w-full object-cover"
                                         />

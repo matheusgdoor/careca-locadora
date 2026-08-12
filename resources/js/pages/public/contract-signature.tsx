@@ -41,14 +41,18 @@ export default function ContractSignature({ request, contract, submit_url, pdf_u
             const ratio = window.devicePixelRatio || 1;
             const rect = canvas.getBoundingClientRect();
             const snapshot = hasSignature ? canvas.toDataURL('image/png') : null;
+
             canvas.width = Math.max(1, Math.round(rect.width * ratio));
             canvas.height = Math.max(1, Math.round(rect.height * ratio));
+
             const ctx = canvas.getContext('2d');
             if (!ctx) return;
+
             ctx.scale(ratio, ratio);
             ctx.lineWidth = 2.2;
             ctx.lineCap = 'round';
             ctx.strokeStyle = '#111827';
+
             if (snapshot) {
                 const img = new Image();
                 img.onload = () => ctx.drawImage(img, 0, 0, rect.width, rect.height);
@@ -71,6 +75,7 @@ export default function ContractSignature({ request, contract, submit_url, pdf_u
         if (request.status === 'signed') return;
         const ctx = canvasRef.current?.getContext('2d');
         if (!ctx) return;
+
         const p = point(event);
         ctx.beginPath();
         ctx.moveTo(p.x, p.y);
@@ -82,6 +87,7 @@ export default function ContractSignature({ request, contract, submit_url, pdf_u
         if (!drawing) return;
         const ctx = canvasRef.current?.getContext('2d');
         if (!ctx) return;
+
         const p = point(event);
         ctx.lineTo(p.x, p.y);
         ctx.stroke();
@@ -93,18 +99,25 @@ export default function ContractSignature({ request, contract, submit_url, pdf_u
     const clear = () => {
         const canvas = canvasRef.current;
         if (!canvas) return;
+
         canvas.getContext('2d')?.clearRect(0, 0, canvas.width, canvas.height);
         setHasSignature(false);
         form.setData('signature', '');
+        form.clearErrors();
     };
 
     const submit = (event: FormEvent) => {
         event.preventDefault();
         const canvas = canvasRef.current;
         if (!canvas || !hasSignature) return;
-        form.setData('signature', canvas.toDataURL('image/png'));
-        form.transform((data) => ({ ...data, signature: canvas.toDataURL('image/png') }));
-        form.post(submit_url, { preserveScroll: true });
+
+        const signature = canvas.toDataURL('image/png');
+
+        form.transform((data) => ({ ...data, signature }));
+        form.post(submit_url, {
+            preserveScroll: true,
+            onStart: () => form.clearErrors(),
+        });
     };
 
     const signed = request.status === 'signed';
@@ -130,12 +143,18 @@ export default function ContractSignature({ request, contract, submit_url, pdf_u
                         </div>
 
                         <div className="space-y-7 p-6 sm:p-8">
-                            {signed ? (
-                                <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-5 text-emerald-200">
-                                    <div className="flex items-center gap-3 font-black"><CheckCircle2 className="size-6" />Contrato assinado com sucesso</div>
+                            {signed && (
+                                <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-6 text-emerald-100">
+                                    <div className="flex items-center gap-3 text-lg font-black">
+                                        <CheckCircle2 className="size-7" />
+                                        Contrato assinado com sucesso
+                                    </div>
+                                    <p className="mt-3 text-sm leading-6 text-emerald-200">
+                                        Sua assinatura eletrônica foi registrada e vinculada à versão deste contrato.
+                                    </p>
                                     <p className="mt-2 text-sm">Assinado em {dateTime(request.signed_at)}.</p>
                                 </div>
-                            ) : null}
+                            )}
 
                             <div className="grid gap-3 rounded-2xl bg-zinc-950/60 p-5 sm:grid-cols-2">
                                 <div><span className="text-xs text-zinc-500">Locatário</span><div className="font-bold">{request.signer_name}</div></div>
@@ -145,7 +164,8 @@ export default function ContractSignature({ request, contract, submit_url, pdf_u
                             </div>
 
                             <a href={pdf_url} target="_blank" rel="noreferrer" className="flex h-14 items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800 font-black transition hover:border-red-500">
-                                <FileText className="size-5" /> Visualizar contrato completo em PDF
+                                <FileText className="size-5" />
+                                {signed ? 'Visualizar contrato assinado em PDF' : 'Visualizar contrato completo em PDF'}
                             </a>
 
                             {!signed && (
@@ -155,6 +175,7 @@ export default function ContractSignature({ request, contract, submit_url, pdf_u
                                             <label className="font-black">Assine no quadro abaixo</label>
                                             <button type="button" onClick={clear} className="text-sm font-bold text-red-400 hover:text-red-300">Limpar assinatura</button>
                                         </div>
+
                                         <canvas
                                             ref={canvasRef}
                                             onPointerDown={start}
@@ -163,23 +184,46 @@ export default function ContractSignature({ request, contract, submit_url, pdf_u
                                             onPointerCancel={end}
                                             className="h-48 w-full touch-none rounded-2xl bg-white"
                                         />
-                                        {form.errors.signature && <p className="mt-2 text-sm text-red-400">{form.errors.signature}</p>}
+
+                                        {form.errors.signature && (
+                                            <p className="mt-2 rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">
+                                                {form.errors.signature}
+                                            </p>
+                                        )}
                                     </div>
 
                                     <label className="flex items-start gap-3 rounded-2xl border border-zinc-800 bg-zinc-950/50 p-4 text-sm leading-6">
-                                        <input type="checkbox" checked={form.data.accepted} onChange={(e) => form.setData('accepted', e.target.checked)} className="mt-1 size-4 accent-red-600" />
-                                        <span>Declaro que li o contrato completo, compreendi suas condições e concordo com a contratação e com o registro eletrônico desta assinatura.</span>
+                                        <input
+                                            type="checkbox"
+                                            checked={form.data.accepted}
+                                            onChange={(e) => form.setData('accepted', e.target.checked)}
+                                            className="mt-1 size-4 accent-red-600"
+                                        />
+                                        <span>
+                                            Declaro que li o contrato completo, compreendi suas condições e concordo com a contratação e com o registro eletrônico desta assinatura.
+                                        </span>
                                     </label>
-                                    {form.errors.accepted && <p className="text-sm text-red-400">{form.errors.accepted}</p>}
 
-                                    <button disabled={form.processing || !form.data.accepted || !hasSignature} className="h-14 w-full rounded-xl bg-red-600 text-base font-black transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50">
+                                    {form.errors.accepted && (
+                                        <p className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">
+                                            {form.errors.accepted}
+                                        </p>
+                                    )}
+
+                                    <button
+                                        disabled={form.processing || !form.data.accepted || !hasSignature}
+                                        className="h-14 w-full rounded-xl bg-red-600 text-base font-black transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                                    >
                                         {form.processing ? 'Registrando assinatura...' : 'Assinar contrato'}
                                     </button>
                                 </form>
                             )}
                         </div>
                     </section>
-                    <p className="mt-5 text-center text-xs text-zinc-500">Link válido até {dateTime(request.expires_at)}.</p>
+
+                    <p className="mt-5 text-center text-xs text-zinc-500">
+                        Link válido até {dateTime(request.expires_at)}.
+                    </p>
                 </div>
             </main>
         </>
