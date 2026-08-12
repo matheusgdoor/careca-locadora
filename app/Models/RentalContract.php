@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Services\Numbering\NumberSequenceService;
 use App\Traits\BelongsToOrganization;
+use DomainException;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -23,6 +24,12 @@ class RentalContract extends Model
 
     protected $attributes = [
         'status' => 'draft',
+        'rental_mode' => 'daily',
+        'contract_version' => 1,
+        'extra_distance_value' => 0,
+        'protection_included' => false,
+        'protection_deductible' => 0,
+        'fuel_policy' => 'same_level',
         'subtotal' => 0,
         'discount_value' => 0,
         'additional_value' => 0,
@@ -45,10 +52,14 @@ class RentalContract extends Model
         });
 
         static::saving(function (self $contract): void {
+            $contract->guardSignedCommercialTerms();
+
             $contract->subtotal = (float) ($contract->subtotal ?? 0);
             $contract->discount_value = (float) ($contract->discount_value ?? 0);
             $contract->additional_value = (float) ($contract->additional_value ?? 0);
             $contract->deposit_value = (float) ($contract->deposit_value ?? 0);
+            $contract->extra_distance_value = (float) ($contract->extra_distance_value ?? 0);
+            $contract->protection_deductible = (float) ($contract->protection_deductible ?? 0);
 
             $contract->total_value = max(
                 0,
@@ -56,6 +67,10 @@ class RentalContract extends Model
                 - (float) $contract->discount_value
                 + (float) $contract->additional_value
             );
+
+            if ($contract->rental_mode !== 'monthly') {
+                $contract->billing_day = null;
+            }
         });
     }
 
@@ -68,6 +83,12 @@ class RentalContract extends Model
             'activated_at' => 'datetime',
             'closed_at' => 'datetime',
             'cancelled_at' => 'datetime',
+            'contract_version' => 'integer',
+            'billing_day' => 'integer',
+            'included_distance' => 'decimal:2',
+            'extra_distance_value' => 'decimal:4',
+            'protection_included' => 'boolean',
+            'protection_deductible' => 'decimal:2',
             'subtotal' => 'decimal:2',
             'discount_value' => 'decimal:2',
             'additional_value' => 'decimal:2',
@@ -97,5 +118,49 @@ class RentalContract extends Model
     public function events(): HasMany
     {
         return $this->hasMany(RentalContractEvent::class, 'rental_contract_id');
+    }
+
+    public function isMonthly(): bool
+    {
+        return $this->rental_mode === 'monthly';
+    }
+
+    public function isDaily(): bool
+    {
+        return $this->rental_mode === 'daily';
+    }
+
+    private function guardSignedCommercialTerms(): void
+    {
+        if (! $this->exists || blank($this->getOriginal('signed_at'))) {
+            return;
+        }
+
+        foreach ([
+            'rental_mode',
+            'starts_at',
+            'ends_at',
+            'business_partner_id',
+            'pickup_location',
+            'return_location',
+            'billing_day',
+            'included_distance',
+            'extra_distance_value',
+            'protection_included',
+            'protection_deductible',
+            'fuel_policy',
+            'subtotal',
+            'discount_value',
+            'additional_value',
+            'deposit_value',
+            'total_value',
+            'terms',
+        ] as $field) {
+            if ($this->isDirty($field)) {
+                throw new DomainException(
+                    'Contrato assinado não permite alteração de condição comercial crítica. Gere um aditivo ou nova versão.'
+                );
+            }
+        }
     }
 }
