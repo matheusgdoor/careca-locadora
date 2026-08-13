@@ -3,32 +3,33 @@
 <head>
 <meta charset="utf-8">
 <style>
-@page{margin:22px 26px 36px}
-body{font-family:DejaVu Sans,sans-serif;color:#18181b;font-size:9px;line-height:1.38}
-.header{border-bottom:4px solid #dc2626;padding-bottom:11px;margin-bottom:13px}
-.logo{width:180px;max-height:76px;object-fit:contain}
-.title{margin-top:7px;font-size:18px;font-weight:700}
+@page{margin:20px 26px 34px}
+body{font-family:DejaVu Sans,sans-serif;color:#18181b;font-size:9px;line-height:1.36}
+.header{border-bottom:4px solid #dc2626;padding-bottom:10px;margin-bottom:12px}
+.logo{width:178px;max-height:72px;object-fit:contain}
+.title{margin-top:6px;font-size:18px;font-weight:700}
 .subtitle{margin-top:3px;color:#52525b}
 .mode{display:inline-block;margin-top:7px;background:#18181b;color:#fff;padding:5px 9px;font-size:9px;font-weight:700}
 .version{float:right;margin-top:11px;color:#71717a;font-size:8px}
-.section{margin-top:11px}
+.section{margin-top:10px}
 .section-title{background:#18181b;color:#fff;padding:6px 8px;font-size:10px;font-weight:700}
 .section-title.red{background:#b91c1c}
 .grid,.summary{width:100%;border-collapse:collapse}
 .grid td,.grid th,.summary td{border:1px solid #d4d4d8;padding:5px 6px;vertical-align:top}
 .grid th{background:#f4f4f5;text-align:left;font-size:8px}
-.summary .label{display:block;color:#71717a;font-size:7.3px;text-transform:uppercase;margin-bottom:2px}
+.summary .label{display:block;color:#71717a;font-size:7.2px;text-transform:uppercase;margin-bottom:2px}
 .summary .value{font-weight:700;font-size:8.8px}
+.qualify{margin-top:3px;font-size:7.6px;line-height:1.35;color:#3f3f46}
 .money{font-size:12px;color:#b91c1c;font-weight:700}
-.clause{margin:7px 0;text-align:justify}
+.clause{margin:6px 0;text-align:justify}
 .clause-title{font-weight:700}
-.note{border:1px solid #fecaca;background:#fff7f7;padding:7px 8px;margin-top:8px}
-.signatures{width:100%;border-collapse:collapse;margin-top:25px;page-break-inside:avoid}
-.signatures td{width:50%;text-align:center;padding:30px 14px 0;vertical-align:bottom}
+.note{border:1px solid #fecaca;background:#fff7f7;padding:7px 8px;margin-top:7px}
+.signatures{width:100%;border-collapse:collapse;margin-top:23px;page-break-inside:avoid}
+.signatures td{width:50%;text-align:center;padding:28px 14px 0;vertical-align:bottom}
 .sign-line{border-top:1px solid #27272a;padding-top:5px}
-.signature-status{margin-top:12px;border:1px solid #d4d4d8;background:#fafafa;padding:8px;text-align:center;font-size:7.8px}
+.signature-status{margin-top:11px;border:1px solid #d4d4d8;background:#fafafa;padding:8px;text-align:center;font-size:7.7px}
 .muted{color:#71717a}.small{font-size:7.5px}.nowrap{white-space:nowrap}
-.footer{position:fixed;left:0;right:0;bottom:-23px;text-align:center;font-size:7px;color:#71717a}
+.footer{position:fixed;left:0;right:0;bottom:-22px;text-align:center;font-size:7px;color:#71717a}
 .page-break{page-break-before:always}
 </style>
 </head>
@@ -51,6 +52,11 @@ $formatPhone=function(?string $value):string{
     return $value ?: '—';
 };
 
+$formatCep=function(?string $value):string{
+    $d=preg_replace('/\D+/','',(string)$value);
+    return strlen($d)===8 ? substr($d,0,5).'-'.substr($d,5,3) : ($value ?: '—');
+};
+
 $unitLabel=function(?string $unit):string{
     return match($unit){
         'daily'=>'Diária',
@@ -61,26 +67,44 @@ $unitLabel=function(?string $unit):string{
     };
 };
 
-$customerPhone=data_get($contract->customer,'whatsapp') ?: data_get($contract->customer,'phone');
-$companyDocument=data_get($contract->company,'document') ?: data_get($contract->company,'cnpj_cpf') ?: data_get($contract->company,'cnpj');
+$companyName=data_get($contract->company,'legal_name') ?: data_get($contract->company,'trade_name') ?: 'Careca Locadora de Veículos';
+$companyTrade=data_get($contract->company,'trade_name');
+$companyDocument=data_get($contract->company,'cnpj');
 
 $companyAddress=collect([
-    data_get($contract->company,'address'),
-    data_get($contract->company,'number'),
+    data_get($contract->company,'street'),
+    data_get($contract->company,'address_number'),
+    data_get($contract->company,'address_complement'),
+])->filter()->implode(', ');
+
+$companyCity=collect([
     data_get($contract->company,'district'),
     data_get($contract->company,'city'),
     data_get($contract->company,'state'),
-    data_get($contract->company,'zip_code'),
-])->filter()->implode(', ');
+])->filter()->implode(' - ');
+
+$companyContact=collect([
+    data_get($contract->company,'phone') ? $formatPhone(data_get($contract->company,'phone')) : null,
+    data_get($contract->company,'whatsapp') ? 'WhatsApp '.$formatPhone(data_get($contract->company,'whatsapp')) : null,
+    data_get($contract->company,'email'),
+])->filter()->implode(' | ');
+
+$customer=$contract->customer;
+$primaryAddress=$customer?->addresses?->firstWhere('is_primary',true) ?: $customer?->addresses?->first();
 
 $customerAddress=collect([
-    data_get($contract->customer,'address'),
-    data_get($contract->customer,'number'),
-    data_get($contract->customer,'district'),
-    data_get($contract->customer,'city'),
-    data_get($contract->customer,'state'),
-    data_get($contract->customer,'zip_code'),
+    data_get($primaryAddress,'address'),
+    data_get($primaryAddress,'number'),
+    data_get($primaryAddress,'complement'),
 ])->filter()->implode(', ');
+
+$customerCity=collect([
+    data_get($primaryAddress,'district'),
+    data_get($primaryAddress,'city'),
+    data_get($primaryAddress,'state'),
+])->filter()->implode(' - ');
+
+$customerPhone=data_get($customer,'whatsapp') ?: data_get($customer,'phone');
 
 $distance=$contract->included_distance===null
     ? 'Quilometragem livre'
@@ -102,26 +126,55 @@ $fuel=match($contract->fuel_policy){
 </div>
 
 <div class="section">
-<div class="section-title red">CONDIÇÕES PARTICULARES DA LOCAÇÃO</div>
+<div class="section-title red">QUALIFICAÇÃO DAS PARTES</div>
 <table class="summary">
 <tr>
 <td width="50%">
 <span class="label">Locadora</span>
-<span class="value">{{ data_get($contract->company,'trade_name') ?: data_get($contract->company,'legal_name') ?: 'Careca Locadora de Veículos' }}</span>
-@if($companyDocument)<br><span class="small">CNPJ/CPF: {{ $formatDocument($companyDocument) }}</span>@endif
-@if($companyAddress)<br><span class="small">{{ $companyAddress }}</span>@endif
+<span class="value">{{ $companyName }}</span>
+@if($companyTrade && $companyTrade!==$companyName)<div class="qualify">Nome fantasia: {{ $companyTrade }}</div>@endif
+<div class="qualify">
+@if($companyDocument)CNPJ: {{ $formatDocument($companyDocument) }}@endif
+@if(data_get($contract->company,'state_registration'))<br>Inscrição Estadual: {{ data_get($contract->company,'state_registration') }}@endif
+@if(data_get($contract->company,'municipal_registration'))<br>Inscrição Municipal: {{ data_get($contract->company,'municipal_registration') }}@endif
+@if($companyAddress)<br>{{ $companyAddress }}@endif
+@if($companyCity)<br>{{ $companyCity }}@endif
+@if(data_get($contract->company,'postal_code'))<br>CEP: {{ $formatCep(data_get($contract->company,'postal_code')) }}@endif
+@if($companyContact)<br>{{ $companyContact }}@endif
+</div>
 </td>
+
 <td width="50%">
 <span class="label">Locatário</span>
-<span class="value">{{ data_get($contract->customer,'display_name') ?: 'Não informado' }}</span>
-@if(data_get($contract->customer,'document'))<br><span class="small">CPF/CNPJ: {{ $formatDocument(data_get($contract->customer,'document')) }}</span>@endif
-@if($customerAddress)<br><span class="small">{{ $customerAddress }}</span>@endif
+<span class="value">{{ data_get($customer,'display_name') ?: 'Não informado' }}</span>
+<div class="qualify">
+@if(data_get($customer,'document'))CPF/CNPJ: {{ $formatDocument(data_get($customer,'document')) }}@endif
+@if(data_get($customer,'state_registration'))<br>Inscrição Estadual: {{ data_get($customer,'state_registration') }}@endif
+@if(data_get($customer,'municipal_registration'))<br>Inscrição Municipal: {{ data_get($customer,'municipal_registration') }}@endif
+@if($customerAddress)<br>{{ $customerAddress }}@endif
+@if($customerCity)<br>{{ $customerCity }}@endif
+@if(data_get($primaryAddress,'postal_code'))<br>CEP: {{ $formatCep(data_get($primaryAddress,'postal_code')) }}@endif
+@if(data_get($customer,'email'))<br>{{ data_get($customer,'email') }}@endif
+@if($customerPhone)<br>{{ $formatPhone($customerPhone) }}@endif
+</div>
 </td>
 </tr>
+
+@if($contract->authorizedContact)
 <tr>
-<td><span class="label">Contato do locatário</span><span class="value">{{ data_get($contract->customer,'email') ?: '—' }}</span>@if($customerPhone)<br><span class="small">{{ $formatPhone($customerPhone) }}</span>@endif</td>
-<td><span class="label">Contato autorizado</span><span class="value">{{ data_get($contract->authorizedContact,'name') ?: '—' }}</span></td>
+<td colspan="2">
+<span class="label">Contato / responsável autorizado</span>
+<span class="value">{{ data_get($contract->authorizedContact,'name') }}</span>
+<div class="qualify">
+@if(data_get($contract->authorizedContact,'position'))Cargo: {{ data_get($contract->authorizedContact,'position') }}@endif
+@if(data_get($contract->authorizedContact,'cpf')) | CPF: {{ $formatDocument(data_get($contract->authorizedContact,'cpf')) }}@endif
+@if(data_get($contract->authorizedContact,'document_number')) | Documento: {{ data_get($contract->authorizedContact,'document_number') }}@endif
+@if(data_get($contract->authorizedContact,'email')) | {{ data_get($contract->authorizedContact,'email') }}@endif
+@if(data_get($contract->authorizedContact,'whatsapp')) | {{ $formatPhone(data_get($contract->authorizedContact,'whatsapp')) }}@elseif(data_get($contract->authorizedContact,'phone')) | {{ $formatPhone(data_get($contract->authorizedContact,'phone')) }}@endif
+</div>
+</td>
 </tr>
+@endif
 </table>
 </div>
 
@@ -203,7 +256,6 @@ $fuel=match($contract->fuel_policy){
 @endif
 
 <div class="page-break"></div>
-
 <div class="section">
 <div class="section-title red">CONDIÇÕES GERAIS DE LOCAÇÃO</div>
 <div class="clause"><span class="clause-title">1. DO OBJETO.</span> A LOCADORA entrega à LOCATÁRIA, em caráter temporário e mediante remuneração, o(s) veículo(s) descrito(s) nas Condições Particulares. Para fins deste instrumento, integram o veículo seus pneus, ferramentas, equipamentos, acessórios, chaves, placas e documentos.</div>
@@ -232,8 +284,8 @@ $fuel=match($contract->fuel_policy){
 @endif
 
 <table class="signatures"><tr>
-<td><div class="sign-line">{{ data_get($contract->customer,'display_name') ?: 'LOCATÁRIO' }}<br><span class="muted">LOCATÁRIO</span></div></td>
-<td><div class="sign-line">{{ data_get($contract->company,'trade_name') ?: data_get($contract->company,'legal_name') ?: 'CARECA LOCADORA DE VEÍCULOS' }}<br><span class="muted">LOCADORA / RESPONSÁVEL</span></div></td>
+<td><div class="sign-line">{{ data_get($customer,'display_name') ?: 'LOCATÁRIO' }}<br><span class="muted">LOCATÁRIO</span></div></td>
+<td><div class="sign-line">{{ $companyName }}<br><span class="muted">LOCADORA / RESPONSÁVEL</span></div></td>
 </tr></table>
 
 <div class="signature-status">
