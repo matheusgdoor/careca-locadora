@@ -1,91 +1,39 @@
 <!doctype html>
-<html lang="pt-BR">
-<head>
-<meta charset="utf-8">
-<style>
-@page { margin: 24px 28px 34px; }
-body { font-family: DejaVu Sans, sans-serif; color:#18181b; font-size:10px; line-height:1.42; }
-.header { border-bottom:3px solid #dc2626; padding-bottom:12px; margin-bottom:18px; }
-.logo { width:190px; max-height:92px; object-fit:contain; }
-.title { font-size:20px; font-weight:700; margin:10px 0 2px; }
-.muted { color:#71717a; }
-.section { margin-top:15px; }
-.section-title { background:#18181b; color:#fff; padding:7px 9px; font-size:11px; font-weight:700; }
-.grid { width:100%; border-collapse:collapse; }
-.grid td,.grid th { border:1px solid #d4d4d8; padding:6px; vertical-align:top; }
-.grid th { background:#f4f4f5; text-align:left; }
-.total { font-size:14px; font-weight:700; color:#b91c1c; }
-.terms { border:1px solid #d4d4d8; padding:10px; white-space:pre-wrap; }
-.signatures { width:100%; margin-top:30px; border-collapse:collapse; page-break-inside:avoid; }
-.signatures td { width:50%; text-align:center; padding:20px 15px 0; vertical-align:bottom; }
-.sign-line { border-top:1px solid #27272a; padding-top:5px; }
-.signature-image { max-width:210px; max-height:75px; margin:0 auto 4px; }
-.audit { margin-top:15px; font-size:8px; color:#71717a; }
-.footer { position:fixed; left:0; right:0; bottom:-22px; text-align:center; font-size:8px; color:#71717a; }
-</style>
-</head>
-<body>
-<div class="header">
-@if($logo)<img src="{{ $logo }}" class="logo" alt="Careca Locadora">@endif
-<div class="title">CONTRATO DE LOCAÇÃO DE VEÍCULO</div>
-<div class="muted">Contrato {{ $contract->number }} | Período {{ $contract->starts_at?->format('d/m/Y H:i') }} a {{ $contract->ends_at?->format('d/m/Y H:i') }}</div>
-</div>
-
-<div class="section">
-<div class="section-title">1. PARTES</div>
-<table class="grid">
-<tr><th width="20%">Locadora</th><td>{{ $contract->company?->trade_name ?: $contract->company?->legal_name ?: 'Careca Locadora de Veículos' }} @if($contract->company?->document) — {{ $contract->company->document }} @endif</td></tr>
-<tr><th>Locatário</th><td><strong>{{ $contract->customer?->display_name }}</strong> @if($contract->customer?->document) — {{ $contract->customer->document }} @endif @if($contract->customer?->email)<br>{{ $contract->customer->email }}@endif @if($contract->customer?->phone) — {{ $contract->customer->phone }}@endif</td></tr>
-@if($contract->authorizedContact)<tr><th>Contato autorizado</th><td>{{ $contract->authorizedContact->name }}</td></tr>@endif
-</table>
-</div>
-
-<div class="section">
-<div class="section-title">2. VEÍCULO(S) E CONDIÇÕES COMERCIAIS</div>
-<table class="grid">
-<thead><tr><th>Veículo</th><th>Placa</th><th>Período</th><th>Unidade</th><th>Qtd.</th><th>Valor</th><th>Total</th></tr></thead>
-<tbody>
-@foreach($contract->items as $item)
-<tr>
-<td>{{ $item->asset?->prefix }} — {{ $item->asset?->name }}</td>
-<td>{{ $item->asset?->plate ?: '—' }}</td>
-<td>{{ $item->starts_at?->format('d/m/Y') }} a {{ $item->ends_at?->format('d/m/Y') }}</td>
-<td>{{ $item->billing_unit }}</td>
-<td>{{ number_format((float)$item->quantity,2,',','.') }}</td>
-<td>R$ {{ number_format((float)$item->unit_value,2,',','.') }}</td>
-<td>R$ {{ number_format((float)$item->total_value,2,',','.') }}</td>
-</tr>
-@endforeach
-</tbody>
-</table>
-</div>
-
-<div class="section">
-<div class="section-title">3. VALORES</div>
-<table class="grid">
-<tr><th>Subtotal</th><td>R$ {{ number_format((float)$contract->subtotal,2,',','.') }}</td><th>Desconto</th><td>R$ {{ number_format((float)$contract->discount_value,2,',','.') }}</td></tr>
-<tr><th>Acréscimos</th><td>R$ {{ number_format((float)$contract->additional_value,2,',','.') }}</td><th>Caução</th><td>R$ {{ number_format((float)$contract->deposit_value,2,',','.') }}</td></tr>
-<tr><th colspan="3">Valor total</th><td class="total">R$ {{ number_format((float)$contract->total_value,2,',','.') }}</td></tr>
-</table>
-</div>
-
-<div class="section">
-<div class="section-title">4. TERMOS E CONDIÇÕES</div>
-<div class="terms">{{ $contract->terms ?: 'Aplicam-se as condições comerciais, operacionais e responsabilidades definidas pela locadora para esta contratação.' }}</div>
-</div>
-
-@if($contract->commercial_notes || $contract->operational_notes)
-<div class="section"><div class="section-title">5. OBSERVAÇÕES</div><div class="terms">@if($contract->commercial_notes){{ $contract->commercial_notes }}@endif @if($contract->operational_notes)\n\n{{ $contract->operational_notes }}@endif</div></div>
-@endif
-
-<table class="signatures"><tr>
-<td>@if($signatureImage)<img src="{{ $signatureImage }}" class="signature-image" alt="Assinatura do cliente">@endif<div class="sign-line">{{ $signatureRequest?->signer_name ?: $contract->customer?->display_name ?: 'LOCATÁRIO' }}<br><span class="muted">LOCATÁRIO</span></div></td>
-<td><div style="height:79px"></div><div class="sign-line">CARECA LOCADORA DE VEÍCULOS<br><span class="muted">LOCADORA / RESPONSÁVEL</span></div></td>
-</tr></table>
-
-@if($signatureRequest?->signed_at)
-<div class="audit">Assinatura eletrônica registrada em {{ $signatureRequest->signed_at->format('d/m/Y H:i:s') }}. IP: {{ $signatureRequest->signed_ip ?: 'não informado' }}. Hash original: {{ $signatureRequest->document_hash }}. Hash assinado: {{ $signatureRequest->signed_document_hash }}.</div>
-@endif
-<div class="footer">Careca Locadora de Veículos — Contrato {{ $contract->number }}</div>
-</body>
-</html>
+<html lang="pt-BR"><head><meta charset="utf-8"><style>
+@page{margin:24px 28px 36px}body{font-family:DejaVu Sans,sans-serif;color:#18181b;font-size:9.2px;line-height:1.38}.header{border-bottom:4px solid #dc2626;padding-bottom:12px;margin-bottom:14px}.logo{width:185px;max-height:78px;object-fit:contain}.title{font-size:18px;font-weight:700;margin-top:8px}.subtitle{margin-top:3px;color:#52525b}.mode{display:inline-block;margin-top:7px;background:#18181b;color:#fff;padding:5px 9px;font-size:9px;font-weight:700}.version{float:right;margin-top:7px;color:#71717a;font-size:8px}.section{margin-top:12px}.section-title{background:#18181b;color:#fff;padding:6px 8px;font-size:10px;font-weight:700}.section-title.red{background:#b91c1c}.grid,.summary{width:100%;border-collapse:collapse}.grid td,.grid th,.summary td{border:1px solid #d4d4d8;padding:5px 6px;vertical-align:top}.grid th{background:#f4f4f5;text-align:left}.summary .label{display:block;color:#71717a;font-size:7.5px;text-transform:uppercase;margin-bottom:2px}.summary .value{font-weight:700;font-size:9px}.money{font-size:12px;color:#b91c1c;font-weight:700}.clause{margin:7px 0;text-align:justify}.clause-title{font-weight:700}.note{border:1px solid #fecaca;background:#fff7f7;padding:7px 8px;margin-top:8px}.signatures{width:100%;border-collapse:collapse;margin-top:24px;page-break-inside:avoid}.signatures td{width:50%;text-align:center;padding:28px 14px 0;vertical-align:bottom}.sign-line{border-top:1px solid #27272a;padding-top:5px}.muted{color:#71717a}.small{font-size:7.5px}.footer{position:fixed;left:0;right:0;bottom:-23px;text-align:center;font-size:7px;color:#71717a}.page-break{page-break-before:always}
+</style></head><body>
+@php
+$mode=$contract->rental_mode==='monthly'?'LOCAÇÃO MENSAL':'LOCAÇÃO DIÁRIA';
+$billingLabel=$contract->rental_mode==='monthly'?'Mensalidade':'Diária';
+$item=$contract->items->first();
+$customerPhone=$contract->customer?->whatsapp ?: $contract->customer?->phone;
+$distance=$contract->included_distance===null?'Quilometragem livre':number_format((float)$contract->included_distance,0,',','.').($contract->rental_mode==='monthly'?' km/mês':' km');
+$fuel=match($contract->fuel_policy){'full_to_full'=>'Cheio para cheio','charged_difference'=>'Diferença de combustível cobrada',default=>'Devolver no mesmo nível da retirada'};
+@endphp
+<div class="header">@if($logo)<img src="{{ $logo }}" class="logo" alt="Careca Locadora">@endif<div class="title">CONTRATO DE LOCAÇÃO DE VEÍCULO</div><div class="subtitle">Contrato {{ $contract->number }} | {{ $contract->starts_at?->format('d/m/Y H:i') }} a {{ $contract->ends_at?->format('d/m/Y H:i') }}</div><div class="mode">{{ $mode }}</div><div class="version">Versão {{ (int)($contract->contract_version ?: 1) }}</div></div>
+<div class="section"><div class="section-title red">CONDIÇÕES PARTICULARES DA LOCAÇÃO</div><table class="summary"><tr><td width="50%"><span class="label">Locadora</span><span class="value">{{ $contract->company?->trade_name ?: $contract->company?->legal_name ?: 'Careca Locadora de Veículos' }}</span>@if($contract->company?->document)<br><span class="small">CNPJ/CPF: {{ $contract->company->document }}</span>@endif</td><td width="50%"><span class="label">Locatário</span><span class="value">{{ $contract->customer?->display_name ?: 'Não informado' }}</span>@if($contract->customer?->document)<br><span class="small">CPF/CNPJ: {{ $contract->customer->document }}</span>@endif</td></tr><tr><td><span class="label">Contato do locatário</span><span class="value">{{ $contract->customer?->email ?: '—' }}</span>@if($customerPhone)<br><span class="small">{{ $customerPhone }}</span>@endif</td><td><span class="label">Contato autorizado</span><span class="value">{{ $contract->authorizedContact?->name ?: '—' }}</span></td></tr></table></div>
+<div class="section"><div class="section-title">1. VEÍCULO(S)</div><table class="grid"><thead><tr><th>Veículo</th><th>Placa</th><th>Período</th><th>Unidade</th><th>Qtd.</th><th>Valor unitário</th><th>Total</th></tr></thead><tbody>@foreach($contract->items as $contractItem)<tr><td>{{ $contractItem->asset?->prefix }} — {{ $contractItem->asset?->name }}</td><td>{{ $contractItem->asset?->plate ?: '—' }}</td><td>{{ $contractItem->starts_at?->format('d/m/Y') }} a {{ $contractItem->ends_at?->format('d/m/Y') }}</td><td>{{ $contractItem->billing_unit }}</td><td>{{ number_format((float)$contractItem->quantity,2,',','.') }}</td><td>R$ {{ number_format((float)$contractItem->unit_value,2,',','.') }}</td><td>R$ {{ number_format((float)$contractItem->total_value,2,',','.') }}</td></tr>@endforeach</tbody></table></div>
+<div class="section"><div class="section-title">2. RESUMO COMERCIAL</div><table class="summary"><tr><td width="25%"><span class="label">Modalidade</span><span class="value">{{ $mode }}</span></td><td width="25%"><span class="label">{{ $billingLabel }}</span><span class="value">@if($item)R$ {{ number_format((float)$item->unit_value,2,',','.') }}@else—@endif</span></td><td width="25%"><span class="label">Franquia de KM</span><span class="value">{{ $distance }}</span></td><td width="25%"><span class="label">KM excedente</span><span class="value">R$ {{ number_format((float)$contract->extra_distance_value,2,',','.') }}/km</span></td></tr><tr><td><span class="label">Proteção/seguro</span><span class="value">{{ $contract->protection_included ? 'Incluído' : 'Não incluído' }}</span></td><td><span class="label">Franquia de proteção</span><span class="value">R$ {{ number_format((float)$contract->protection_deductible,2,',','.') }}</span></td><td><span class="label">Caução</span><span class="value">R$ {{ number_format((float)$contract->deposit_value,2,',','.') }}</span></td><td><span class="label">Combustível</span><span class="value">{{ $fuel }}</span></td></tr>@if($contract->rental_mode==='monthly')<tr><td><span class="label">Dia de vencimento</span><span class="value">{{ $contract->billing_day ?: '—' }}</span></td><td colspan="3"><span class="label">Período contratual</span><span class="value">{{ $contract->starts_at?->format('d/m/Y H:i') }} a {{ $contract->ends_at?->format('d/m/Y H:i') }}</span></td></tr>@endif<tr><td colspan="2"><span class="label">Retirada</span><span class="value">{{ $contract->pickup_location ?: 'Conforme combinado entre as partes' }}</span></td><td colspan="2"><span class="label">Devolução</span><span class="value">{{ $contract->return_location ?: 'Conforme combinado entre as partes' }}</span></td></tr></table></div>
+<div class="section"><div class="section-title">3. VALORES</div><table class="grid"><tr><th>Subtotal</th><td>R$ {{ number_format((float)$contract->subtotal,2,',','.') }}</td><th>Desconto</th><td>R$ {{ number_format((float)$contract->discount_value,2,',','.') }}</td></tr><tr><th>Acréscimos</th><td>R$ {{ number_format((float)$contract->additional_value,2,',','.') }}</td><th>Caução</th><td>R$ {{ number_format((float)$contract->deposit_value,2,',','.') }}</td></tr><tr><th colspan="3">Valor total</th><td class="money">R$ {{ number_format((float)$contract->total_value,2,',','.') }}</td></tr></table></div>
+@if($contract->terms)<div class="section"><div class="section-title">4. CONDIÇÕES PARTICULARES ADICIONAIS</div><div class="note">{!! nl2br(e($contract->terms)) !!}</div></div>@endif
+<div class="page-break"></div><div class="section"><div class="section-title red">CONDIÇÕES GERAIS DE LOCAÇÃO</div>
+<div class="clause"><span class="clause-title">1. DO OBJETO.</span> A LOCADORA entrega à LOCATÁRIA, em caráter temporário e mediante remuneração, o(s) veículo(s) descrito(s) nas Condições Particulares. Para fins deste instrumento, integram o veículo seus pneus, ferramentas, equipamentos, acessórios, chaves, placas e documentos.</div>
+<div class="clause"><span class="clause-title">2. DA VISTORIA E ESTADO DO VEÍCULO.</span> A LOCATÁRIA declara receber o veículo nas condições registradas no checklist de retirada, comprometendo-se a comunicar imediatamente qualquer divergência. O checklist de entrega e o checklist de devolução, quando emitidos, integram este contrato para todos os fins.</div>
+<div class="clause"><span class="clause-title">3. DO PRAZO.</span> A locação vigorará pelo período indicado nas Condições Particulares. A permanência do veículo com a LOCATÁRIA após o término dependerá de autorização da LOCADORA e poderá gerar cobrança adicional.</div>
+<div class="clause"><span class="clause-title">4. DO PREÇO E PAGAMENTO.</span> A remuneração será calculada conforme a modalidade indicada neste instrumento. Na locação diária, será considerada a quantidade de diárias e demais encargos contratados. Na locação mensal, serão observados o valor da mensalidade e o dia de vencimento informado nas Condições Particulares.</div>
+<div class="clause"><span class="clause-title">5. DA QUILOMETRAGEM.</span> Quando houver franquia, a LOCATÁRIA poderá utilizar o veículo até o limite indicado. O excedente será cobrado pelo valor unitário por quilômetro informado. Na ausência de limite preenchido, considera-se quilometragem livre, salvo condição particular diversa.</div>
+<div class="clause"><span class="clause-title">6. DO CONDUTOR.</span> O veículo deverá ser conduzido somente por pessoa legalmente habilitada e autorizada, observadas as exigências legais e de eventual proteção securitária. Sendo a LOCATÁRIA pessoa jurídica, permanece responsável pelos condutores que autorizar.</div>
+<div class="clause"><span class="clause-title">7. DA UTILIZAÇÃO.</span> É vedado utilizar o veículo para finalidade ilícita, competição, testes de velocidade, reboque não autorizado, transporte incompatível com sua natureza, sublocação, cessão ou empréstimo não autorizado, bem como conduzi-lo sob efeito de álcool ou substâncias capazes de comprometer a direção.</div>
+<div class="clause"><span class="clause-title">8. DAS MULTAS E PENALIDADES.</span> A LOCATÁRIA responderá pelas infrações, multas, pedágios, estacionamentos e demais encargos decorrentes do uso do veículo durante o período de sua posse, ainda que a notificação seja recebida após o encerramento da locação.</div>
+<div class="clause"><span class="clause-title">9. DA MANUTENÇÃO.</span> A manutenção preventiva decorrente do uso regular e das revisões programadas será de responsabilidade da LOCADORA, salvo condição particular expressa em sentido diverso. Reparos decorrentes de mau uso, negligência, imprudência, imperícia ou uso fora das especificações serão suportados pela LOCATÁRIA.</div>
+<div class="clause"><span class="clause-title">10. DA PROTEÇÃO, SEGURO E SINISTROS.</span> Quando indicada proteção/seguro, sua aplicação observará limites, franquias, exclusões e procedimentos informados pela LOCADORA. Em caso de acidente, furto, roubo, incêndio ou outro sinistro, a LOCATÁRIA deverá comunicar imediatamente a LOCADORA e adotar as providências cabíveis.</div>
+<div class="clause"><span class="clause-title">11. DO COMBUSTÍVEL.</span> O veículo deverá ser devolvido conforme a política de combustível indicada e registrada no checklist. Eventual diferença poderá ser cobrada da LOCATÁRIA.</div>
+<div class="clause"><span class="clause-title">12. DA DEVOLUÇÃO.</span> O veículo deverá ser devolvido no local e prazo ajustados, nas mesmas condições gerais de conservação em que foi entregue, ressalvado o desgaste normal. Danos, avarias, acessórios ausentes, limpeza especial, combustível faltante e demais diferenças apuradas poderão ser cobrados.</div>
+<div class="clause"><span class="clause-title">13. DAS RESPONSABILIDADES.</span> A LOCATÁRIA responde pela guarda e utilização do veículo enquanto estiver sob sua posse, inclusive pelos prejuízos decorrentes de conduta de seus prepostos, empregados, autorizados ou terceiros a quem tenha indevidamente permitido o uso.</div>
+<div class="clause"><span class="clause-title">14. DA RESCISÃO.</span> O descumprimento das obrigações, o inadimplemento ou a utilização do veículo em desacordo com este instrumento poderá ensejar a rescisão e a exigência de devolução, sem prejuízo da cobrança dos valores devidos e das perdas e danos comprovadamente apuradas.</div>
+<div class="clause"><span class="clause-title">15. DO FORO.</span> Fica eleito o foro da comarca da sede da LOCADORA para dirimir controvérsias decorrentes deste instrumento, ressalvadas as hipóteses em que a legislação aplicável determine foro diverso.</div>
+<div class="note small">Este contrato deve ser interpretado em conjunto com as Condições Particulares, checklist(s), anexos, aditivos e demais documentos vinculados à locação.</div></div>
+@if($contract->commercial_notes || $contract->operational_notes)<div class="section"><div class="section-title">OBSERVAÇÕES</div><div class="note">@if($contract->commercial_notes){!! nl2br(e($contract->commercial_notes)) !!}@endif @if($contract->operational_notes) @if($contract->commercial_notes)<br><br>@endif {!! nl2br(e($contract->operational_notes)) !!}@endif</div></div>@endif
+<table class="signatures"><tr><td><div class="sign-line">{{ $contract->customer?->display_name ?: 'LOCATÁRIO' }}<br><span class="muted">LOCATÁRIO</span></div></td><td><div class="sign-line">CARECA LOCADORA DE VEÍCULOS<br><span class="muted">LOCADORA / RESPONSÁVEL</span></div></td></tr></table>
+<div class="note small">Para assinatura física, as partes poderão assinar nos campos acima. Quando firmado eletronicamente, a autenticação, data, hora, endereço IP e hashes de integridade constarão do Certificado de Assinatura Eletrônica anexado ao final do documento.</div>
+<div class="footer">Careca Locadora de Veículos — Contrato {{ $contract->number }} — Versão {{ (int)($contract->contract_version ?: 1) }}</div></body></html>
